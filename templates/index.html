@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #FFFFFF;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
             min-height: 100vh;
             color: #333;
             line-height: 1.6;
@@ -291,7 +291,7 @@
 </head>
 <body>
     <div class="container">
-        
+        <h1>🏠 Real Estate Market Dashboard</h1>
         
         <div class="search-section">
             <form class="search-form" id="searchForm">
@@ -400,35 +400,35 @@
                 if (sf.price_median) {
                     statsGrid.appendChild(createStatCard(
                         formatCurrency(sf.price_median),
-                        'Median Market Price'
+                        'Median Price'
                     ));
                 }
 
                 if (sf.inventory_total) {
                     statsGrid.appendChild(createStatCard(
                         Math.round(sf.inventory_total),
-                        'Listings On Market'
+                        'Total Inventory'
                     ));
                 }
 
                 if (sf.days_on_market_median) {
                     statsGrid.appendChild(createStatCard(
                         Math.round(sf.days_on_market_median),
-                        'Days on Market Median'
+                        'Median Days on Market'
                     ));
                 }
 
                 if (sf.months_of_inventory_median) {
                     statsGrid.appendChild(createStatCard(
                         sf.months_of_inventory_median.toFixed(1),
-                        'Months of Supply Median'
+                        'Months of Inventory'
                     ));
                 }
 
                 if (sf.estimated_sales_total) {
                     statsGrid.appendChild(createStatCard(
                         Math.round(sf.estimated_sales_total),
-                        'Estimated Total Sales'
+                        'Estimated Sales'
                     ));
                 }
             }
@@ -439,7 +439,7 @@
                 if (rental.gross_yield_median) {
                     statsGrid.appendChild(createStatCard(
                         (rental.gross_yield_median * 100).toFixed(2) + '%',
-                        'Gross Yield Median'
+                        'Median Rental Yield'
                     ));
                 }
             }
@@ -543,6 +543,15 @@
                     scales: {
                         y: {
                             beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Returns (%)',
+                                color: '#1e3a5f',
+                                font: {
+                                    size: 12,
+                                    weight: 500
+                                }
+                            },
                             ticks: {
                                 callback: function(value) {
                                     return value + '%';
@@ -554,6 +563,15 @@
                             }
                         },
                         x: {
+                            title: {
+                                display: true,
+                                text: 'Time Period (Years)',
+                                color: '#1e3a5f',
+                                font: {
+                                    size: 12,
+                                    weight: 500
+                                }
+                            },
                             ticks: {
                                 color: '#1e3a5f'
                             },
@@ -561,9 +579,36 @@
                                 display: false
                             }
                         }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutBounce'
+                    },
+                    elements: {
+                        point: {
+                            radius: function(context) {
+                                const baseRadius = 6;
+                                const time = Date.now() * 0.005;
+                                const pulse = Math.sin(time + context.dataIndex) * 1.5;
+                                return baseRadius + pulse;
+                            },
+                            hoverRadius: function(context) {
+                                const baseRadius = 8;
+                                const time = Date.now() * 0.005;
+                                const pulse = Math.sin(time + context.dataIndex) * 2;
+                                return baseRadius + pulse;
+                            }
+                        }
                     }
                 }
             });
+
+            // Animate the pulsing effect
+            setInterval(() => {
+                if (returnsChart) {
+                    returnsChart.update('none');
+                }
+            }, 100);
         }
 
         function createMetricsChart(singleFamily, rental) {
