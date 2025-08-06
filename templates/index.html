@@ -524,8 +524,8 @@
                     pointBackgroundColor: '#32d74b',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8
+                    pointRadius: 8,
+                    pointHoverRadius: 10
                 }]
             };
 
@@ -548,8 +548,8 @@
                                 text: 'Returns (%)',
                                 color: '#1e3a5f',
                                 font: {
-                                    size: 12,
-                                    weight: 500
+                                    size: 14,
+                                    weight: 600
                                 }
                             },
                             ticks: {
@@ -568,8 +568,8 @@
                                 text: 'Time Period (Years)',
                                 color: '#1e3a5f',
                                 font: {
-                                    size: 12,
-                                    weight: 500
+                                    size: 14,
+                                    weight: 600
                                 }
                             },
                             ticks: {
@@ -581,34 +581,35 @@
                         }
                     },
                     animation: {
-                        duration: 2000,
-                        easing: 'easeInOutBounce'
-                    },
-                    elements: {
-                        point: {
-                            radius: function(context) {
-                                const baseRadius = 6;
-                                const time = Date.now() * 0.005;
-                                const pulse = Math.sin(time + context.dataIndex) * 1.5;
-                                return baseRadius + pulse;
-                            },
-                            hoverRadius: function(context) {
-                                const baseRadius = 8;
-                                const time = Date.now() * 0.005;
-                                const pulse = Math.sin(time + context.dataIndex) * 2;
-                                return baseRadius + pulse;
-                            }
+                        duration: 1500,
+                        easing: 'easeInOutQuart',
+                        onComplete: function() {
+                            startPulseAnimation();
                         }
                     }
                 }
             });
 
-            // Animate the pulsing effect
-            setInterval(() => {
-                if (returnsChart) {
-                    returnsChart.update('none');
+            function startPulseAnimation() {
+                let animationId;
+                function animate() {
+                    if (returnsChart) {
+                        const time = Date.now() * 0.003;
+                        const datasets = returnsChart.data.datasets;
+                        
+                        // Update point radius with pulsing effect
+                        datasets[0].pointRadius = datasets[0].data.map((_, index) => {
+                            const baseRadius = 8;
+                            const pulse = Math.sin(time + index * 0.5) * 2;
+                            return Math.max(4, baseRadius + pulse);
+                        });
+                        
+                        returnsChart.update('none');
+                        animationId = requestAnimationFrame(animate);
+                    }
                 }
-            }, 100);
+                animate();
+            }
         }
 
         function createMetricsChart(singleFamily, rental) {
