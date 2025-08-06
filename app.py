@@ -6,7 +6,6 @@ import base64
 
 app = Flask(__name__)
 
-# Replace with your real HouseCanary credentials
 USERNAME = 'dhenry@nomadicrealestate.com'
 PASSWORD = 'qasnex-4joSxu-qigbet'
 
@@ -38,9 +37,6 @@ def make_api_request(endpoint, zipcode):
         print(f"Error making API request: {str(e)}")
         return None
 
-
-
-
 def fetch_market_data(zipcode):
     """Fetch market data from multiple endpoints concurrently"""
     market_data = {
@@ -66,12 +62,23 @@ def fetch_market_data(zipcode):
         for key, future in futures.items():
             try:
                 response = future.result()
-                if response and f"zip{endpoints[key].replace('zip', '')}" in response:
-                    api_response = response[f"zip{endpoints[key].replace('zip', '')}"]
-                    if api_response.get('api_code') == 0:
-                        market_data[key] = api_response.get('result')
+                print(f"Processing {key} response: {response}")
+                
+                if response and isinstance(response, list) and len(response) > 0:
+                    # Response is an array, get the first item
+                    data_item = response[0]
+                    endpoint_key = f"zip{endpoints[key].replace('zip', '')}"
+                    
+                    if endpoint_key in data_item:
+                        api_response = data_item[endpoint_key]
+                        if api_response.get('api_code') == 0:
+                            market_data[key] = api_response.get('result')
+                            print(f"Successfully extracted {key} data: {market_data[key]}")
+                        else:
+                            print(f"API error for {key}: {api_response.get('api_code_description')}")
+                            market_data[key] = None
                     else:
-                        print(f"API error for {key}: {api_response.get('api_code_description')}")
+                        print(f"Key {endpoint_key} not found in response for {key}")
                         market_data[key] = None
                 else:
                     print(f"Invalid response format for {key}: {response}")
@@ -80,6 +87,7 @@ def fetch_market_data(zipcode):
                 print(f"Error getting {key} data: {str(e)}")
                 market_data[key] = None
     
+    print(f"Final market_data: {market_data}")
     return market_data
 
 @app.route('/')
