@@ -528,18 +528,14 @@
 
             let html = '';
 
-            // Market Details Stats
-            if (data.details) {
-                const details = data.details;
-                html += createStatCard('1-Year HPI Forecast', formatPercentage(details.hpi_forecast_1_year));
-                html += createStatCard('Listings On Market Count', formatNumber(details.listings_on_market_count));
-                html += createStatCard('1-Year Risk of Decline', formatPercentage(details.risk_of_decline_1_year));
-                html += createStatCard('Months of Supply Median', formatNumber(details.months_of_supply_median));
-                html += createStatCard('Price on Market Median', formatCurrency(details.price_on_market_median));
-                html += createStatCard('Close to List Price Original Median', formatPercentage(details.close_to_list_price_original_median));
-                html += createStatCard('Price Per Square Foot on Market Median', formatCurrency(details.price_per_sqft_on_market_median));
-                html += createStatCard('Days on Market Median', formatNumber(details.days_on_market_median));
-                html += createStatCard('1-Year RPI Forecast', formatPercentage(details.rpi_forecast_1_year));
+            // Market Details Stats from single_family data
+            if (data.details && data.details.single_family) {
+                const sf = data.details.single_family;
+                html += createStatCard('Listings On Market Count', formatNumber(sf.inventory_total));
+                html += createStatCard('Price on Market Median', formatCurrency(sf.price_median));
+                html += createStatCard('Estimated Total Sales', formatNumber(sf.estimated_sales_total));
+                html += createStatCard('Months of Supply Median', formatNumber(sf.months_of_inventory_median));
+                html += createStatCard('Days on Market Median', formatNumber(sf.days_on_market_median));
             }
 
             // Add rental data if available
@@ -552,19 +548,9 @@
                 html += createStatCard('Market Grade', data.grade.market_grade || 'N/A');
             }
 
-            // If no data available, show sample data
+            // If no data available, show message
             if (!data.details && !data.rental && !data.grade) {
-                html += createStatCard('1-Year HPI Forecast', '0.9%');
-                html += createStatCard('Listings On Market Count', '118');
-                html += createStatCard('1-Year Risk of Decline', '28.4% (Low)');
-                html += createStatCard('Months of Supply Median', '4.5');
-                html += createStatCard('Gross Yield Median', '4.6%');
-                html += createStatCard('Price on Market Median', '$1,917,450');
-                html += createStatCard('Close to List Price Original Median', '91.0%');
-                html += createStatCard('Price Per Square Foot on Market Median', '$639');
-                html += createStatCard('Days on Market Median', '86');
-                html += createStatCard('Market Grade', 'A');
-                html += createStatCard('1-Year RPI Forecast', '0.4%');
+                html = '<div class="stat-card"><div class="stat-label">No Data Available</div><div class="stat-value">Please check your ZIP code or try again later</div></div>';
             }
 
             container.innerHTML = html;
