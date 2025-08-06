@@ -26,9 +26,12 @@ def make_api_request(endpoint, zipcode):
         response = requests.get(url, headers=headers, params=params, timeout=API_CONFIG['timeout'])
         
         if response.status_code == 200:
-            return response.json()
+            data = response.json()
+            print(f"API Response for {endpoint}: {data}")  # Debug logging
+            return data
         else:
             print(f"API request failed for {endpoint}: {response.status_code}")
+            print(f"Response: {response.text}")
             return None
     except Exception as e:
         print(f"Error making API request for {endpoint}: {str(e)}")
@@ -58,7 +61,17 @@ def fetch_market_data(zipcode):
         
         for key, future in futures.items():
             try:
-                market_data[key] = future.result()
+                response = future.result()
+                if response and f"zip{endpoints[key].replace('zip', '')}" in response:
+                    api_response = response[f"zip{endpoints[key].replace('zip', '')}"]
+                    if api_response.get('api_code') == 0:
+                        market_data[key] = api_response.get('result')
+                    else:
+                        print(f"API error for {key}: {api_response.get('api_code_description')}")
+                        market_data[key] = None
+                else:
+                    print(f"Invalid response format for {key}: {response}")
+                    market_data[key] = None
             except Exception as e:
                 print(f"Error getting {key} data: {str(e)}")
                 market_data[key] = None
