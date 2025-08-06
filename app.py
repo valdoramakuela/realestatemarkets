@@ -9,30 +9,79 @@ app = Flask(__name__)
 # API configuration
 API_CONFIG = {
     'base_url': 'https://api.housecanary.com/v2',
-    'auth': 'Basic 2835Q6GDS5P3ARNRLWNN',
+    'api_key': '2835Q6GDS5P3ARNRLWNN',  # Your API key
+    'api_secret': 'YOUR_API_SECRET',    # You need to add your API secret
+    'timeout': 10
+}
+
+# API configuration - Update these with your actual credentials
+API_CONFIG = {
+    'base_url': 'https://api.housecanary.com/v2',
+    'api_key': '2835Q6GDS5P3ARNRLWNN',
+    'api_secret': '',  # Add your API secret here
     'timeout': 10
 }
 
 def make_api_request(endpoint, zipcode):
-    """Make API request to HouseCanary API"""
+    """Make API request to HouseCanary API with multiple auth methods"""
     try:
         url = f"{API_CONFIG['base_url']}{endpoint}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': API_CONFIG['auth']
-        }
         params = {'zipcode': zipcode}
         
-        response = requests.get(url, headers=headers, params=params, timeout=API_CONFIG['timeout'])
+        print(f"Making request to: {url} with zipcode: {zipcode}")
         
+        # Method 1: Try Basic Auth with key:secret
+        if API_CONFIG['api_secret']:
+            auth = (API_CONFIG['api_key'], API_CONFIG['api_secret'])
+            headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+            
+            response = requests.get(url, auth=auth, headers=headers, params=params, timeout=API_CONFIG['timeout'])
+            if response.status_code == 200:
+                return response.json()
+            print(f"Basic auth failed: {response.status_code} - {response.text}")
+        
+        # Method 2: Try with Authorization header (your current method)
+        auth_string = base64.b64encode(f"{API_CONFIG['api_key']}:".encode()).decode()
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': f'Basic {auth_string}',
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.get(url, headers=headers, params=params, timeout=API_CONFIG['timeout'])
         if response.status_code == 200:
-            data = response.json()
-            print(f"API Response for {endpoint}: {data}")  # Debug logging
-            return data
-        else:
-            print(f"API request failed for {endpoint}: {response.status_code}")
-            print(f"Response: {response.text}")
-            return None
+            return response.json()
+        print(f"Header auth failed: {response.status_code} - {response.text}")
+        
+        # Method 3: Try with just API key as Authorization
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': f'Bearer {API_CONFIG["api_key"]}',
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.get(url, headers=headers, params=params, timeout=API_CONFIG['timeout'])
+        if response.status_code == 200:
+            return response.json()
+        print(f"Bearer auth failed: {response.status_code} - {response.text}")
+        
+        # Method 4: Try with API key in params
+        params['api_key'] = API_CONFIG['api_key']
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.get(url, headers=headers, params=params, timeout=API_CONFIG['timeout'])
+        if response.status_code == 200:
+            return response.json()
+        print(f"Param auth failed: {response.status_code} - {response.text}")
+        
+        return None
+        
     except Exception as e:
         print(f"Error making API request for {endpoint}: {str(e)}")
         return None
