@@ -291,7 +291,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🏠 Real Estate Market Dashboard</h1>
+        
         
         <div class="search-section">
             <form class="search-form" id="searchForm">
@@ -400,35 +400,35 @@
                 if (sf.price_median) {
                     statsGrid.appendChild(createStatCard(
                         formatCurrency(sf.price_median),
-                        'Median Price'
+                        'Median Market Price'
                     ));
                 }
 
                 if (sf.inventory_total) {
                     statsGrid.appendChild(createStatCard(
                         Math.round(sf.inventory_total),
-                        'Total Inventory'
+                        'Listings On Market'
                     ));
                 }
 
                 if (sf.days_on_market_median) {
                     statsGrid.appendChild(createStatCard(
                         Math.round(sf.days_on_market_median),
-                        'Median Days on Market'
+                        'Days on Market Median'
                     ));
                 }
 
                 if (sf.months_of_inventory_median) {
                     statsGrid.appendChild(createStatCard(
                         sf.months_of_inventory_median.toFixed(1),
-                        'Months of Inventory'
+                        'Months of Supply Median'
                     ));
                 }
 
                 if (sf.estimated_sales_total) {
                     statsGrid.appendChild(createStatCard(
                         Math.round(sf.estimated_sales_total),
-                        'Estimated Sales'
+                        'Estimated Total Sales'
                     ));
                 }
             }
@@ -439,7 +439,7 @@
                 if (rental.gross_yield_median) {
                     statsGrid.appendChild(createStatCard(
                         (rental.gross_yield_median * 100).toFixed(2) + '%',
-                        'Median Rental Yield'
+                        'Gross Yield Median'
                     ));
                 }
             }
