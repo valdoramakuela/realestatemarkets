@@ -7,27 +7,27 @@ import base64
 app = Flask(__name__)
 
 
-ef make_api_request(endpoint, zipcode):
+def make_api_request(endpoint, zipcode):
     """Make API request to HouseCanary API"""
     try:
-        url = f"{'https://api.housecanary.com/v2'}{endpoint}"
-        payload={}
+        url = f"https://api.housecanary.com/v2{endpoint}"
         headers = {
             'Accept': 'application/json',
             'Authorization': 'Basic 2835Q6GDS5P3ARNRLWNN'
         }
         params = {'zipcode': zipcode}
         
-        response = requests.get(url, headers=headers, params=params, timeout=10, data=payload)
+        response = requests.get(url, headers=headers, params=params, timeout=10)
         
         if response.status_code == 200:
             return response.json()
         else:
-            print(f"API request failed for {endpoint}: {response.status_code}")
+            print(f"API request failed for {endpoint}: {response.status_code} - {response.text}")
             return None
     except Exception as e:
         print(f"Error making API request for {endpoint}: {str(e)}")
         return None
+
 
 
 def fetch_market_data(zipcode):
@@ -102,6 +102,7 @@ def api_market_data():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
 
 
 
