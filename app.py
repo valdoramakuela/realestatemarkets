@@ -6,13 +6,6 @@ import base64
 
 app = Flask(__name__)
 
-# API configuration
-API_CONFIG = {
-    'base_url': 'https://api.housecanary.com/v2',
-    'api_key': '2835Q6GDS5P3ARNRLWNN',  # Your API key
-    'api_secret': 'YOUR_API_SECRET',    # You need to add your API secret
-    'timeout': 10
-}
 
 # API configuration - Update these with your actual credentials
 API_CONFIG = {
@@ -121,4 +114,5 @@ def api_market_data():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
 
