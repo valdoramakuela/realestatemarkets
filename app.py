@@ -6,28 +6,38 @@ import base64
 
 app = Flask(__name__)
 
+# Replace with your real HouseCanary credentials
+USERNAME = 'dhenry@nomadicrealestate.com'
+PASSWORD = 'qasnex-4joSxu-qigbet'
 
 def make_api_request(endpoint, zipcode):
-    """Make API request to HouseCanary API"""
+    """Make API request using Basic Auth (username:password)"""
     try:
         url = f"https://api.housecanary.com/v2{endpoint}"
-        payload={}
+        params = {'zipcode': zipcode}
+
+        # Encode username:password in Base64
+        auth_string = f"{USERNAME}:{PASSWORD}"
+        encoded_auth = base64.b64encode(auth_string.encode()).decode()
+
         headers = {
             'Accept': 'application/json',
-            'Authorization': 'Basic 2835Q6GDS5P3ARNRLWNN'
+            'Authorization': f'Basic {encoded_auth}'
         }
-        params = {'zipcode': zipcode}
-        
-        response = requests.request("GET", url, headers=headers, data=payload)
-        
+
+        print(f"Requesting: {url}?zipcode={zipcode}")
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+
         if response.status_code == 200:
             return response.json()
         else:
-            print(f"API request failed for {endpoint}: {response.status_code} - {response.text}")
+            print(f"API request failed: {response.status_code} - {response.text}")
             return None
+
     except Exception as e:
-        print(f"Error making API request for {endpoint}: {str(e)}")
+        print(f"Error making API request: {str(e)}")
         return None
+
 
 
 
@@ -103,6 +113,7 @@ def api_market_data():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
 
 
 
