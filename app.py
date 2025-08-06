@@ -42,65 +42,47 @@ def make_api_request(endpoint, zipcode):
 
 
 def fetch_market_data(zipcode):
-    """Fetch relevant market data from multiple endpoints concurrently"""
-    market_data = {}
-
+    """Fetch market data from multiple endpoints concurrently"""
+    market_data = {
+        'details': None,
+        'rental': None,
+        'grade': None
+    }
+    
     # Define API endpoints
     endpoints = {
         'details': '/zip/details',
         'rental': '/zip/hcri',
         'grade': '/zip/market_grade'
     }
-
+    
+    # Use ThreadPoolExecutor for concurrent requests
     with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {
             key: executor.submit(make_api_request, endpoint, zipcode)
             for key, endpoint in endpoints.items()
         }
-
+        
         for key, future in futures.items():
             try:
                 response = future.result()
-
-                if not response or not isinstance(response, dict):
+                endpoint_key = f"zip{endpoints[key]}"  # e.g., "zip/market_grade"
+                if response and endpoint_key in response:
+                    api_response = response[endpoint_key]
+                    if api_response.get('api_code') == 0:
+                        market_data[key] = api_response.get('result')
+                    else:
+                        print(f"[{key}] API error: {api_response.get('api_code_description')}")
+                        market_data[key] = None
+                else:
                     print(f"[{key}] Invalid or empty response.")
-                    continue
-
-                # Convert endpoint path to key format in response
-                response_key = endpoints[key].lstrip('/').replace('/', '/')
-
-                if response_key not in response:
-                    print(f"[{key}] Key '{response_key}' not in response.")
-                    continue
-
-                result_block = response[response_key]
-                if result_block.get("api_code") != 0:
-                    print(f"[{key}] API error: {result_block.get('api_code_description')}")
-                    continue
-
-                result = result_block.get("result", {})
-
-                # Extract only required fields based on endpoint
-                if key == 'details':
-                    single_family = result.get("single_family", {})
-                    market_data.update({
-                        'listings_on_market': single_family.get("inventory_total"),
-                        'price_median': single_family.get("price_median"),
-                        'estimated_sales_total': single_family.get("estimated_sales_total"),
-                        'months_of_inventory_median': single_family.get("months_of_inventory_median"),
-                        'days_on_market_median': single_family.get("days_on_market_median")
-                    })
-
-                elif key == 'rental':
-                    market_data['gross_yield_median'] = result.get("gross_yield_median")
-
-                elif key == 'grade':
-                    market_data['market_grade'] = result.get("market_grade")
-
+                    market_data[key] = None
             except Exception as e:
-                print(f"Error fetching data for {key}: {str(e)}")
-
+                print(f"[{key}] Error: {str(e)}")
+                market_data[key] = None
+    
     return market_data
+
 
 @app.route('/')
 def index():
@@ -133,6 +115,7 @@ def api_market_data():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
 
 
 
