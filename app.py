@@ -96,28 +96,79 @@ def index():
     return render_template('index.html')
 
 @app.route('/api/market-data')
-def api_market_data():
-    """API endpoint to fetch market data"""
-    zipcode = request.args.get('zipcode', '').strip()
-    
+def get_market_data():
+    zipcode = request.args.get('zipcode')
     if not zipcode:
         return jsonify({'error': 'ZIP code is required'}), 400
     
-    if not zipcode.isdigit() or len(zipcode) != 5:
-        return jsonify({'error': 'Please enter a valid 5-digit ZIP code'}), 400
-    
     try:
-        market_data = fetch_market_data(zipcode)
-        return jsonify({
-            'success': True,
-            'data': market_data,
-            'zipcode': zipcode
-        })
+        # API endpoints
+        details_url = f"https://api.housecanary.com/v2/zip/details?zipcode={zipcode}"
+        rental_url = f"https://api.housecanary.com/v2/zip/hcri?zipcode={zipcode}"
+        grade_url = f"https://api.housecanary.com/v2/zip/market_grade?zipcode={zipcode}"
+        
+        print(f"Requesting: {details_url}")
+        print(f"Requesting: {rental_url}")
+        print(f"Requesting: {grade_url}")
+        
+        # Make API calls with authentication
+        headers = {'Authorization': f'Bearer {HOUSECANARY_API_KEY}'}
+        
+        details_response = requests.get(details_url, headers=headers)
+        rental_response = requests.get(rental_url, headers=headers)
+        grade_response = requests.get(grade_url, headers=headers)
+        
+        # Parse responses
+        details_data = details_response.json() if details_response.status_code == 200 else []
+        rental_data = rental_response.json() if rental_response.status_code == 200 else []
+        grade_data = grade_response.json() if grade_response.status_code == 200 else []
+        
+        print(f"Processing details response: {details_data}")
+        print(f"Processing rental response: {rental_data}")
+        print(f"Processing grade response: {grade_data}")
+        
+        # Extract data with correct keys (single slash, not double slash)
+        market_data = {
+            'details': None,
+            'rental': None,
+            'grade': None
+        }
+        
+        # Process details data
+        if details_data and isinstance(details_data, list) and len(details_data) > 0:
+            details_item = details_data[0]
+            if 'zip/details' in details_item:  # Changed from 'zip//details' to 'zip/details'
+                market_data['details'] = details_item['zip/details']
+                print(f"Found details data: {market_data['details']}")
+            else:
+                print(f"Key zip/details not found in response for details")
+        
+        # Process rental data
+        if rental_data and isinstance(rental_data, list) and len(rental_data) > 0:
+            rental_item = rental_data[0]
+            if 'zip/hcri' in rental_item:  # Changed from 'zip//hcri' to 'zip/hcri'
+                market_data['rental'] = rental_item['zip/hcri']
+                print(f"Found rental data: {market_data['rental']}")
+            else:
+                print(f"Key zip/hcri not found in response for rental")
+        
+        # Process grade data
+        if grade_data and isinstance(grade_data, list) and len(grade_data) > 0:
+            grade_item = grade_data[0]
+            if 'zip/market_grade' in grade_item:  # Changed from 'zip//market_grade' to 'zip/market_grade'
+                market_data['grade'] = grade_item['zip/market_grade']
+                print(f"Found grade data: {market_data['grade']}")
+            else:
+                print(f"Key zip/market_grade not found in response for grade")
+        
+        print(f"Final market_data: {market_data}")
+        
+        return jsonify(market_data)
+        
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': f'Error fetching market data: {str(e)}'
-        }), 500
+        print(f"Error fetching market data: {str(e)}")
+        return jsonify({'error': 'Failed to fetch market data'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
