@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Estate Market Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,10 +13,10 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #f8fafc;
+            color: #333;
             line-height: 1.6;
         }
 
@@ -25,145 +26,128 @@
             padding: 20px;
         }
 
-        .header {
-            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #1e293b 100%);
-            color: white;
-            padding: 40px 0;
-            margin-bottom: 30px;
-            border-radius: 16px;
+        h1 {
             text-align: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(34, 197, 94, 0.1) 50%, transparent 70%);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #ffffff 0%, #22c55e 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            position: relative;
-            z-index: 1;
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            position: relative;
-            z-index: 1;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .search-section {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
+            background: white;
+            border-radius: 20px;
             padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
             margin-bottom: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         }
 
         .search-form {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             align-items: center;
             flex-wrap: wrap;
         }
 
-        .search-form label {
-            font-weight: 600;
-            color: #e2e8f0;
-            font-size: 1.1rem;
-        }
-
-        .search-form input {
+        input[type="text"] {
+            flex: 1;
+            min-width: 200px;
             padding: 15px 20px;
-            border: 2px solid rgba(255,255,255,0.1);
+            border: 2px solid #e1e5e9;
             border-radius: 12px;
             font-size: 16px;
-            background: rgba(255,255,255,0.05);
-            color: #f8fafc;
-            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
-            min-width: 180px;
+            background: #f8f9fa;
         }
 
-        .search-form input:focus {
+        input[type="text"]:focus {
             outline: none;
-            border-color: #22c55e;
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
-            background: rgba(255,255,255,0.1);
+            border-color: #667eea;
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
         }
 
-        .search-form input::placeholder {
-            color: #94a3b8;
-        }
-
-        .search-btn {
-            background: linear-gradient(135deg, #1e40af 0%, #22c55e 100%);
+        button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 15px 30px;
             border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
             font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .search-btn:hover {
+        button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(34, 197, 94, 0.4);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
 
-        .search-btn:disabled {
-            opacity: 0.6;
+        button:disabled {
+            opacity: 0.7;
             cursor: not-allowed;
             transform: none;
         }
 
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 30px;
-            margin-bottom: 30px;
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 18px;
         }
 
-        .main-stats {
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(238, 90, 36, 0.3);
+            display: none;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
+            margin-bottom: 40px;
         }
 
         .stat-card {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(15px);
+            background: white;
+            border-radius: 20px;
             padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-left: 4px solid #22c55e;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -175,451 +159,500 @@
             top: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, transparent 0%, rgba(34, 197, 94, 0.05) 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .stat-card:hover::before {
-            opacity: 1;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-            border-left-color: #16a34a;
-        }
-
-        .stat-label {
-            font-size: 0.95rem;
-            color: #cbd5e1;
-            margin-bottom: 10px;
-            font-weight: 500;
-            position: relative;
-            z-index: 1;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
 
         .stat-value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #f8fafc;
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .stat-change {
-            font-size: 0.9rem;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            position: relative;
-            z-index: 1;
-            display: inline-block;
-        }
-
-        .stat-change.positive {
-            background: linear-gradient(135deg, #16a34a, #22c55e);
-            color: white;
-        }
-
-        .stat-change.negative {
-            background: linear-gradient(135deg, #dc2626, #ef4444);
-            color: white;
-        }
-
-        .stat-change.neutral {
-            background: linear-gradient(135deg, #475569, #64748b);
-            color: white;
-        }
-
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .action-card {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(15px);
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.1);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .action-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-        }
-
-        .create-btn {
-            background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
-            color: white;
-            border: none;
-            padding: 18px 35px;
-            border-radius: 12px;
-            cursor: pointer;
+            font-size: 2.5rem;
             font-weight: 700;
-            font-size: 16px;
-            width: 100%;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+            color: #667eea;
+            margin-bottom: 10px;
+            display: block;
         }
 
-        .create-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(34, 197, 94, 0.4);
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
         }
 
-        .action-icons {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 25px;
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
         }
 
-        .action-icon {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            padding: 15px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            color: #cbd5e1;
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
         }
 
-        .action-icon:hover {
-            background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
-            transform: translateY(-2px);
-        }
-
-        .action-icon svg {
-            width: 28px;
-            height: 28px;
-            margin-bottom: 8px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #cbd5e1;
-            font-size: 1.1rem;
-        }
-
-        .loading::after {
+        .chart-container::before {
             content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .no-data h3 {
+            color: #6c757d;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .no-data p {
+            color: #adb5bd;
+        }
+
+        .grade-badge {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #22c55e;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 10px;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .error {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
-            color: #fca5a5;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 15px 0;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            backdrop-filter: blur(10px);
-        }
-
-        .location-info {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(15px);
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 30px;
-        }
-
-        .breadcrumb {
-            color: #94a3b8;
-            font-size: 0.95rem;
-            margin-bottom: 12px;
-        }
-
-        .breadcrumb a {
-            color: #22c55e;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .breadcrumb a:hover {
-            color: #16a34a;
-            text-decoration: underline;
-        }
-
-        .location-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #f8fafc;
-            margin-bottom: 8px;
-        }
-
-        .hover-info {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .grade-a { background: #28a745; color: white; }
+        .grade-b { background: #007bff; color: white; }
+        .grade-c { background: #ffc107; color: #333; }
+        .grade-d { background: #dc3545; color: white; }
 
         @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            .search-form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .header h1 {
-                font-size: 2.2rem;
+            .container {
+                padding: 15px;
             }
 
-            .main-stats {
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 20px;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            input[type="text"] {
+                min-width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .stats-grid {
                 grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .charts-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .chart-container {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Real Estate Market Dashboard</h1>
-            <p>Comprehensive market analysis and property insights</p>
-        </div>
-
+        <h1>🏠 Real Estate Market Dashboard</h1>
+        
         <div class="search-section">
-            <div class="search-form">
-                <label for="zipcode">ZIP Code:</label>
-                <input type="text" id="zipcode" placeholder="Enter ZIP code" value="22207">
-                <button class="search-btn" onclick="fetchMarketData()" id="searchBtn">Get Market Data</button>
-            </div>
+            <form class="search-form" id="searchForm">
+                <input type="text" id="zipcode" placeholder="Enter ZIP code (e.g., 22207)" required>
+                <button type="submit" id="searchBtn">Search Market Data</button>
+            </form>
         </div>
 
-        <div id="results-container" style="display: none;">
-            <div class="location-info">
-                <div class="breadcrumb">
-                    <a href="#">Washington-Arlington-Alexandria, DC-VA-MD-WV</a> / <a href="#">ZIP Codes</a> / <span id="current-location">Arlington, VA, 22207</span>
-                </div>
-                <h2 class="location-title" id="location-title">Arlington, VA, 22207</h2>
-                <div class="hover-info">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                    </svg>
-                    Last updated: <span id="last-update">Just now</span>
-                </div>
+        <div class="loading" id="loading">
+            Fetching market data...
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="dashboard" id="dashboard">
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be populated here -->
             </div>
 
-            <div class="dashboard">
-                <div class="main-stats" id="stats-container">
-                    <!-- Stats will be populated here -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3 class="chart-title">Historical Returns</h3>
+                    <canvas id="returnsChart"></canvas>
                 </div>
-
-                <div class="sidebar">
-                    <div class="action-card">
-                        <button class="create-btn">Create Buy Box</button>
-                        <div class="action-icons">
-                            <div class="action-icon">
-                                <svg fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                                </svg>
-                                <span>Download</span>
-                            </div>
-                            <div class="action-icon">
-                                <svg fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                </svg>
-                                <span>Interested</span>
-                            </div>
-                        </div>
-                    </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">Market Metrics</h3>
+                    <canvas id="metricsChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <div id="loading" class="loading" style="display: none;">
-            <p>Loading market data...</p>
+        <div class="no-data" id="noData" style="display: none;">
+            <h3>No Data Available</h3>
+            <p>Please check your ZIP code or try again later</p>
         </div>
-
-        <div id="error-container" style="display: none;"></div>
     </div>
 
     <script>
-        // Format currency values
-        function formatCurrency(value) {
-            if (!value && value !== 0) return 'N/A';
+        let returnsChart = null;
+        let metricsChart = null;
+
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const zipcode = document.getElementById('zipcode').value.trim();
+            
+            if (!zipcode) {
+                showError('Please enter a valid ZIP code');
+                return;
+            }
+
+            await fetchMarketData(zipcode);
+        });
+
+        async function fetchMarketData(zipcode) {
+            showLoading(true);
+            hideError();
+            hideDashboard();
+
+            try {
+                const response = await fetch(`/api/market-data?zipcode=${zipcode}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch data');
+                }
+
+                console.log('Market data received:', data);
+
+                if (!data.details && !data.rental && !data.grade) {
+                    showNoData();
+                    return;
+                }
+
+                displayDashboard(data, zipcode);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message || 'Failed to fetch market data');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayDashboard(data, zipcode) {
+            const dashboard = document.getElementById('dashboard');
+            const statsGrid = document.getElementById('statsGrid');
+            
+            // Clear previous content
+            statsGrid.innerHTML = '';
+
+            // Market Grade
+            if (data.grade && data.grade.result) {
+                const gradeCard = createStatCard(
+                    data.grade.result.market_grade || 'N/A',
+                    'Market Grade',
+                    getGradeClass(data.grade.result.market_grade)
+                );
+                statsGrid.appendChild(gradeCard);
+            }
+
+            // Property Details
+            if (data.details && data.details.result && data.details.result.single_family) {
+                const sf = data.details.result.single_family;
+                
+                if (sf.price_median) {
+                    statsGrid.appendChild(createStatCard(
+                        formatCurrency(sf.price_median),
+                        'Median Price'
+                    ));
+                }
+
+                if (sf.inventory_total) {
+                    statsGrid.appendChild(createStatCard(
+                        Math.round(sf.inventory_total),
+                        'Total Inventory'
+                    ));
+                }
+
+                if (sf.days_on_market_median) {
+                    statsGrid.appendChild(createStatCard(
+                        Math.round(sf.days_on_market_median),
+                        'Median Days on Market'
+                    ));
+                }
+
+                if (sf.months_of_inventory_median) {
+                    statsGrid.appendChild(createStatCard(
+                        sf.months_of_inventory_median.toFixed(1),
+                        'Months of Inventory'
+                    ));
+                }
+
+                if (sf.estimated_sales_total) {
+                    statsGrid.appendChild(createStatCard(
+                        Math.round(sf.estimated_sales_total),
+                        'Estimated Sales'
+                    ));
+                }
+            }
+
+            // Rental Yield
+            if (data.rental && data.rental.result) {
+                const rental = data.rental.result;
+                if (rental.gross_yield_median) {
+                    statsGrid.appendChild(createStatCard(
+                        (rental.gross_yield_median * 100).toFixed(2) + '%',
+                        'Median Rental Yield'
+                    ));
+                }
+            }
+
+            // Create charts
+            createCharts(data);
+            
+            dashboard.style.display = 'block';
+        }
+
+        function createStatCard(value, label, extraClass = '') {
+            const card = document.createElement('div');
+            card.className = 'stat-card';
+            
+            let displayValue = value;
+            if (extraClass && label === 'Market Grade') {
+                displayValue = `<span class="stat-value">${value}</span><div class="grade-badge ${extraClass}">${value}</div>`;
+            } else {
+                displayValue = `<span class="stat-value">${value}</span>`;
+            }
+            
+            card.innerHTML = `
+                ${displayValue}
+                <div class="stat-label">${label}</div>
+            `;
+            
+            return card;
+        }
+
+        function getGradeClass(grade) {
+            if (!grade) return '';
+            switch (grade.toUpperCase()) {
+                case 'A': return 'grade-a';
+                case 'B': return 'grade-b';
+                case 'C': return 'grade-c';
+                case 'D': return 'grade-d';
+                default: return '';
+            }
+        }
+
+        function createCharts(data) {
+            // Destroy existing charts
+            if (returnsChart) {
+                returnsChart.destroy();
+                returnsChart = null;
+            }
+            if (metricsChart) {
+                metricsChart.destroy();
+                metricsChart = null;
+            }
+
+            // Historical Returns Chart
+            if (data.details && data.details.result && data.details.result.historical) {
+                const historical = data.details.result.historical;
+                createReturnsChart(historical);
+            }
+
+            // Market Metrics Chart
+            if (data.details && data.details.result && data.details.result.single_family) {
+                createMetricsChart(data.details.result.single_family, data.rental);
+            }
+        }
+
+        function createReturnsChart(historical) {
+            const ctx = document.getElementById('returnsChart').getContext('2d');
+            
+            const chartData = {
+                labels: ['1 Year', '5 Years', '10 Years', '20 Years'],
+                datasets: [{
+                    label: 'Returns (%)',
+                    data: [
+                        historical.returns_1_year ? (historical.returns_1_year * 100) : 0,
+                        historical.returns_5_years ? (historical.returns_5_years * 100) : 0,
+                        historical.returns_10_years ? (historical.returns_10_years * 100) : 0,
+                        historical.returns_20_years ? (historical.returns_20_years * 100) : 0
+                    ],
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(118, 75, 162, 0.8)',
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(102, 126, 234, 1)',
+                        'rgba(118, 75, 162, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            };
+
+            returnsChart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createMetricsChart(singleFamily, rental) {
+            const ctx = document.getElementById('metricsChart').getContext('2d');
+            
+            const labels = [];
+            const values = [];
+            const colors = [];
+
+            if (singleFamily.days_on_market_median) {
+                labels.push('Days on Market');
+                values.push(singleFamily.days_on_market_median);
+                colors.push('rgba(102, 126, 234, 0.8)');
+            }
+
+            if (singleFamily.months_of_inventory_median) {
+                labels.push('Months of Inventory');
+                values.push(singleFamily.months_of_inventory_median);
+                colors.push('rgba(118, 75, 162, 0.8)');
+            }
+
+            if (rental && rental.result && rental.result.gross_yield_median) {
+                labels.push('Rental Yield (%)');
+                values.push(rental.result.gross_yield_median * 100);
+                colors.push('rgba(255, 99, 132, 0.8)');
+            }
+
+            if (singleFamily.estimated_sales_total) {
+                labels.push('Estimated Sales');
+                values.push(singleFamily.estimated_sales_total);
+                colors.push('rgba(54, 162, 235, 0.8)');
+            }
+
+            metricsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderColor: colors.map(color => color.replace('0.8', '1')),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function formatCurrency(amount) {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'USD',
                 minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(value);
+                maximumFractionDigits: 0,
+            }).format(amount);
         }
 
-        // Format percentage values
-        function formatPercentage(value) {
-            if (value === null || value === undefined) return 'N/A';
-            return `${value}%`;
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('searchBtn').disabled = show;
         }
 
-        // Format numbers with commas
-        function formatNumber(value) {
-            if (!value && value !== 0) return 'N/A';
-            return new Intl.NumberFormat('en-US').format(value);
-        }
-
-        // Determine stat change class
-        function getChangeClass(value, type = 'neutral') {
-            if (value === null || value === undefined) return 'neutral';
-            if (type === 'percentage') {
-                return value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral';
-            }
-            return 'neutral';
-        }
-
-        // Create stat card HTML
-        function createStatCard(label, value, change = null, changeType = 'neutral') {
-            let changeHtml = '';
-            if (change !== null && change !== undefined) {
-                const changeClass = getChangeClass(change, changeType);
-                changeHtml = `<div class="stat-change ${changeClass}">${change}</div>`;
-            }
-
-            return `
-                <div class="stat-card">
-                    <div class="stat-label">${label}</div>
-                    <div class="stat-value">${value}</div>
-                    ${changeHtml}
-                </div>
-            `;
-        }
-
-        // Display market data
-        function displayMarketData(data, zipcode) {
-            const container = document.getElementById('stats-container');
-            const resultsContainer = document.getElementById('results-container');
-            const locationTitle = document.getElementById('location-title');
-            const currentLocation = document.getElementById('current-location');
-            const lastUpdate = document.getElementById('last-update');
-
-            // Update location info
-            locationTitle.textContent = `ZIP Code ${zipcode}`;
-            currentLocation.textContent = `ZIP Code ${zipcode}`;
-            lastUpdate.textContent = new Date().toLocaleString();
-
-            let html = '';
-
-            // Market Details Stats from single_family data
-            if (data.details && data.details.single_family) {
-                const sf = data.details.single_family;
-                html += createStatCard('Listings On Market Count', formatNumber(sf.inventory_total));
-                html += createStatCard('Price on Market Median', formatCurrency(sf.price_median));
-                html += createStatCard('Estimated Total Sales', formatNumber(sf.estimated_sales_total));
-                html += createStatCard('Months of Supply Median', formatNumber(sf.months_of_inventory_median));
-                html += createStatCard('Days on Market Median', formatNumber(sf.days_on_market_median));
-            }
-
-            // Add rental data if available
-            if (data.rental) {
-                html += createStatCard('Gross Yield Median', formatPercentage(data.rental.gross_yield_median));
-            }
-
-            // Add market grade if available
-            if (data.grade) {
-                html += createStatCard('Market Grade', data.grade.market_grade || 'N/A');
-            }
-
-            // If no data available, show message
-            if (!data.details && !data.rental && !data.grade) {
-                html = '<div class="stat-card"><div class="stat-label">No Data Available</div><div class="stat-value">Please check your ZIP code or try again later</div></div>';
-            }
-
-            container.innerHTML = html;
-            resultsContainer.style.display = 'block';
-        }
-
-        // Show error message
         function showError(message) {
-            const errorContainer = document.getElementById('error-container');
-            errorContainer.innerHTML = `<div class="error">${message}</div>`;
-            errorContainer.style.display = 'block';
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
         }
 
-        // Hide error message
         function hideError() {
-            document.getElementById('error-container').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Fetch market data from Flask API
-        async function fetchMarketData() {
-            const zipcode = document.getElementById('zipcode').value.trim();
-            const searchBtn = document.getElementById('searchBtn');
-            
-            if (!zipcode) {
-                showError('Please enter a ZIP code');
-                return;
-            }
-
-            if (!/^\d{5}$/.test(zipcode)) {
-                showError('Please enter a valid 5-digit ZIP code');
-                return;
-            }
-
-            hideError();
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('results-container').style.display = 'none';
-            searchBtn.disabled = true;
-            searchBtn.textContent = 'Loading...';
-
-            try {
-                const response = await fetch(`/api/market-data?zipcode=${zipcode}`);
-                const result = await response.json();
-
-                if (result.success) {
-                    displayMarketData(result.data, zipcode);
-                } else {
-                    showError(result.error || 'Failed to fetch market data');
-                }
-            } catch (error) {
-                console.error('Error fetching market data:', error);
-                showError('Error fetching market data. Please try again.');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-                searchBtn.disabled = false;
-                searchBtn.textContent = 'Get Market Data';
-            }
+        function hideDashboard() {
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('noData').style.display = 'none';
         }
 
-        // Initialize with default ZIP code
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchMarketData();
-        });
-
-        // Allow Enter key to trigger search
-        document.getElementById('zipcode').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                fetchMarketData();
-            }
-        });
+        function showNoData() {
+            document.getElementById('noData').style.display = 'block';
+        }
     </script>
 </body>
 </html>
