@@ -112,7 +112,12 @@ def get_market_data():
         print(f"Requesting: {grade_url}")
         
         # Make API calls with authentication
-        headers = {'Authorization': f'Bearer {HOUSECANARY_API_KEY}'}
+         auth_string = f"{USERNAME}:{PASSWORD}"
+        encoded_auth = base64.b64encode(auth_string.encode()).decode()
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': f'Basic {encoded_auth}'
+        }
         
         details_response = requests.get(details_url, headers=headers)
         rental_response = requests.get(rental_url, headers=headers)
@@ -171,4 +176,5 @@ def get_market_data():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
 
