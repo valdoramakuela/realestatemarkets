@@ -3,8 +3,6 @@ import requests
 import os
 from concurrent.futures import ThreadPoolExecutor
 import base64
-import concurrent.futures
-
 
 app = Flask(__name__)
 
@@ -44,58 +42,45 @@ def make_api_request(endpoint, zipcode):
 
 
 def fetch_market_data(zipcode):
-    """Fetch and parse HouseCanary market data for a given ZIP code"""
-
-    endpoints = {
-        "details": "/zip/details",
-        "rental": "/zip/hcri",
-        "grade": "/zip/market_grade"
+    """Fetch market data from multiple endpoints concurrently"""
+    market_data = {
+        'details': None,
+        'rental': None,
+        'grade': None
     }
-
-    market_data = {}
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future_to_key = {
-            executor.submit(make_api_request, endpoint, zipcode): key
+    
+    # Define API endpoints
+    endpoints = {
+        'details': '/zip/details',
+        'rental': '/zip/hcri',
+        'grade': '/zip/market_grade'
+    }
+    
+    # Use ThreadPoolExecutor for concurrent requests
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = {
+            key: executor.submit(make_api_request, endpoint, zipcode)
             for key, endpoint in endpoints.items()
         }
-
-        for future in concurrent.futures.as_completed(future_to_key):
-            key = future_to_key[future]
-            response = future.result()
-            endpoint_key = endpoints[key].lstrip('/')  # ✅ Fixed here
-print(f"Full response for [{key}]:", json.dumps(response, indent=2))
-
-            if response and isinstance(response, list):
-                response_item = response[0]
-
-                if endpoint_key in response_item:
-                    data_block = response_item[endpoint_key]
-                    if data_block.get("api_code") == 0:
-                        result = data_block.get("result")
-
-                        # Drill down based on endpoint type
-                        if key == "details":
-                            market_data["single_family"] = result.get("single_family", {})
-                            market_data["multi_family"] = result.get("multi_family", {})
-                        elif key == "rental":
-                            market_data["rental_yield"] = {
-                                "average": result.get("gross_yield_average"),
-                                "median": result.get("gross_yield_median"),
-                                "count": result.get("gross_yield_count"),
-                            }
-                        elif key == "grade":
-                            market_data["market_grade"] = result.get("market_grade")
+        
+        for key, future in futures.items():
+            try:
+                response = future.result()
+                if response and f"zip{endpoints[key].replace('zip', '')}" in response:
+                    api_response = response[f"zip{endpoints[key].replace('zip', '')}"]
+                    if api_response.get('api_code') == 0:
+                        market_data[key] = api_response.get('result')
                     else:
-                        print(f"[{key}] API error: {data_block.get('api_code_description')}")
+                        print(f"API error for {key}: {api_response.get('api_code_description')}")
+                        market_data[key] = None
                 else:
-                    print(f"[{key}] Missing key '{endpoint_key}' in response")
-            else:
-                print(f"[{key}] Invalid or empty response")
-
+                    print(f"Invalid response format for {key}: {response}")
+                    market_data[key] = None
+            except Exception as e:
+                print(f"Error getting {key} data: {str(e)}")
+                market_data[key] = None
+    
     return market_data
-
-
 
 @app.route('/')
 def index():
@@ -128,18 +113,3 @@ def api_market_data():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
