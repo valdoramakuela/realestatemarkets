@@ -11,13 +11,14 @@ def make_api_request(endpoint, zipcode):
     """Make API request to HouseCanary API"""
     try:
         url = f"https://api.housecanary.com/v2{endpoint}"
+        payload={}
         headers = {
             'Accept': 'application/json',
             'Authorization': 'Basic 2835Q6GDS5P3ARNRLWNN'
         }
         params = {'zipcode': zipcode}
         
-        response = requests.request("GET", url, headers=headers, params=params)
+        response = requests.request("GET", url, headers=headers, data=payload)
         
         if response.status_code == 200:
             return response.json()
@@ -102,6 +103,7 @@ def api_market_data():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
 
 
 
