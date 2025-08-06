@@ -17,7 +17,7 @@ def make_api_request(endpoint, zipcode):
         }
         params = {'zipcode': zipcode}
         
-        response = requests.get(url, headers=headers, params=params, timeout=10)
+        response = requests.get(url, headers=headers, params=params)
         
         if response.status_code == 200:
             return response.json()
@@ -102,6 +102,7 @@ def api_market_data():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
 
 
 
