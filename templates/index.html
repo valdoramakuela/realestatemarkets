@@ -579,37 +579,31 @@
                                 display: false
                             }
                         }
-                    },
-                    animation: {
-                        duration: 1500,
-                        easing: 'easeInOutQuart',
-                        onComplete: function() {
-                            startPulseAnimation();
-                        }
                     }
                 }
             });
 
-            function startPulseAnimation() {
-                let animationId;
-                function animate() {
-                    if (returnsChart) {
+            // Add pulsing animation after chart is created
+            setTimeout(() => {
+                let animationFrame;
+                function animatePoints() {
+                    if (returnsChart && returnsChart.data && returnsChart.data.datasets[0]) {
                         const time = Date.now() * 0.003;
-                        const datasets = returnsChart.data.datasets;
+                        const dataset = returnsChart.data.datasets[0];
                         
-                        // Update point radius with pulsing effect
-                        datasets[0].pointRadius = datasets[0].data.map((_, index) => {
+                        // Create pulsing effect for each point
+                        dataset.pointRadius = dataset.data.map((_, index) => {
                             const baseRadius = 8;
-                            const pulse = Math.sin(time + index * 0.5) * 2;
-                            return Math.max(4, baseRadius + pulse);
+                            const pulse = Math.sin(time + index * 1.5) * 2;
+                            return Math.max(5, baseRadius + pulse);
                         });
                         
                         returnsChart.update('none');
-                        animationId = requestAnimationFrame(animate);
+                        animationFrame = requestAnimationFrame(animatePoints);
                     }
                 }
-                animate();
-            }
+                animatePoints();
+            }, 500);
         }
 
         function createMetricsChart(singleFamily, rental) {
