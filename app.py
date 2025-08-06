@@ -7,38 +7,26 @@ import base64
 app = Flask(__name__)
 
 
-# API configuration - Update these with your actual credentials
-API_CONFIG = {
-    'base_url': 'https://api.housecanary.com/v2',
-    'api_key': '2835Q6GDS5P3ARNRLWNN',
-    'timeout': 10
-}
-
-def make_api_request(endpoint, zipcode):
-    """Make API request to HouseCanary API using API key only (non-standard Basic Auth)"""
+ef make_api_request(endpoint, zipcode):
+    """Make API request to HouseCanary API"""
     try:
-        if not API_CONFIG['api_key']:
-            raise ValueError("Missing API key in configuration.")
-        
-        url = f"{API_CONFIG['base_url']}{endpoint}"
-        params = {'zipcode': zipcode}
-
+        url = f"{'https://api.housecanary.com/v2'}{endpoint}"
+        payload={}
         headers = {
             'Accept': 'application/json',
-            'Authorization': f'Basic {API_CONFIG["api_key"]}'
+            'Authorization': 'Basic 2835Q6GDS5P3ARNRLWNN'
         }
-
-        print(f"Requesting: {url} with zipcode={zipcode}")
-        response = requests.get(url, headers=headers, params=params, timeout=API_CONFIG['timeout'])
-
+        params = {'zipcode': zipcode}
+        
+        response = requests.get(url, headers=headers, params=params, timeout=10, data=payload)
+        
         if response.status_code == 200:
             return response.json()
         else:
-            print(f"Request failed: {response.status_code} - {response.text}")
+            print(f"API request failed for {endpoint}: {response.status_code}")
             return None
-
     except Exception as e:
-        print(f"Error in API request: {str(e)}")
+        print(f"Error making API request for {endpoint}: {str(e)}")
         return None
 
 
@@ -114,5 +102,6 @@ def api_market_data():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
 
 
