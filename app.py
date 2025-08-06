@@ -63,7 +63,7 @@ def fetch_market_data(zipcode):
         for future in concurrent.futures.as_completed(future_to_key):
             key = future_to_key[future]
             response = future.result()
-            endpoint_key = f"zip{endpoints[key]}"  # e.g., "zip/details"
+            endpoint_key = endpoints[key].lstrip('/')  # ✅ Fixed here
 
             if response and isinstance(response, list):
                 response_item = response[0]
@@ -127,6 +127,7 @@ def api_market_data():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
 
 
 
