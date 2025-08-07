@@ -374,8 +374,8 @@
         let currentZipMarker = null;
         let currentZipCircle = null;
 
-        // Replace with your Google Maps API key
-        const GOOGLE_MAPS_API_KEY = 'AIzaSyBHGYla18wlILgHfqWYQm1-MfwkarMUbvA'; // Replace this with your actual API key
+        
+        const GOOGLE_MAPS_API_KEY = 'AIzaSyBHGYla18wlILgHfqWYQm1-MfwkarMUbvA'; 
 
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -947,7 +947,7 @@
                                 fillOpacity: 0.25,
                                 map: map,
                                 center: location,
-                                radius: 3000 // 3km radius
+                                radius: 2000 // 3km radius
                             });
 
                             // Add marker at center
