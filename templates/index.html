@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Estate Market Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Maps API will be loaded dynamically -->
     <style>
         * {
             margin: 0;
@@ -386,7 +387,12 @@
         let returnsChart = null;
         let metricsChart = null;
         let map = null;
-        let currentZipLayer = null;
+        let geocoder = null;
+        let currentZipMarker = null;
+        let currentZipCircle = null;
+
+        // Replace with your Google Maps API key
+        const GOOGLE_MAPS_API_KEY = 'AIzaSyBHGYla18wlILgHfqWYQm1-MfwkarMUbvA'; // Replace this with your actual API key
 
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -817,96 +823,58 @@
             document.getElementById('noData').style.display = 'block';
         }
 
-        function initializeMap(zipcode) {
-            console.log('Initializing embedded map for ZIP:', zipcode);
-            
-            // ZIP code coordinates for embedding
-            const zipCoordinates = {
-                '22207': { lat: 38.8964, lng: -77.1174, place: 'Arlington, VA' },
-                '22206': { lat: 38.8548, lng: -77.0924, place: 'Alexandria, VA' },
-                '22201': { lat: 38.8759, lng: -77.0564, place: 'Arlington, VA' },
-                '10001': { lat: 40.7484, lng: -73.9967, place: 'New York, NY' },
-                '10002': { lat: 40.7158, lng: -73.9866, place: 'New York, NY' },
-                '90210': { lat: 34.0901, lng: -118.4065, place: 'Beverly Hills, CA' },
-                '90211': { lat: 34.0668, lng: -118.4037, place: 'Beverly Hills, CA' },
-                '60601': { lat: 41.8827, lng: -87.6233, place: 'Chicago, IL' },
-                '60602': { lat: 41.8838, lng: -87.6319, place: 'Chicago, IL' },
-                '33101': { lat: 25.7617, lng: -80.1918, place: 'Miami, FL' },
-                '33102': { lat: 25.7886, lng: -80.1342, place: 'Miami Beach, FL' },
-                '77001': { lat: 29.7372, lng: -95.3899, place: 'Houston, TX' },
-                '30301': { lat: 33.7677, lng: -84.4070, place: 'Atlanta, GA' },
-                '02101': { lat: 42.3604, lng: -71.0582, place: 'Boston, MA' },
-                '98101': { lat: 47.6097, lng: -122.3331, place: 'Seattle, WA' }
-            };
+        function showNoData() {
+            document.getElementById('noData').style.display = 'block';
+        }
 
+        function loadGoogleMapsAndInitialize(zipcode) {
+            // Check if Google Maps is already loaded
+            if (typeof google !== 'undefined' && google.maps) {
+                initializeGoogleMap(zipcode);
+                return;
+            }
+
+            // Show loading message
             const mapContainer = document.getElementById('map');
-            
-            try {
-                const zipData = zipCoordinates[zipcode];
-                
-                if (zipData) {
-                    // Create embedded Google Maps iframe
-                    const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dO9vHeFPyYrqVE&q=${zipData.lat},${zipData.lng}&zoom=13&maptype=roadmap`;
-                    
-                    mapContainer.innerHTML = `
-                        <div style="position: relative; width: 100%; height: 100%;">
-                            <iframe
-                                src="${mapUrl}"
-                                width="100%"
-                                height="100%"
-                                style="border: none; border-radius: 10px;"
-                                allowfullscreen=""
-                                loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade">
-                            </iframe>
-                            <div style="
-                                position: absolute;
-                                top: 15px;
-                                left: 15px;
-                                background: rgba(30, 58, 95, 0.9);
-                                color: white;
-                                padding: 8px 12px;
-                                border-radius: 6px;
-                                font-size: 12px;
-                                font-weight: 600;
-                                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                                z-index: 1000;
-                            ">
-                                📍 ZIP ${zipcode} - ${zipData.place}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // Fallback for unknown ZIP codes
-                    mapContainer.innerHTML = `
+            mapContainer.innerHTML = `
+                <div style="
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    height: 100%; 
+                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+                    border-radius: 10px;
+                    text-align: center;
+                    color: #1e3a5f;
+                    font-family: inherit;
+                ">
+                    <div>
                         <div style="
-                            display: flex; 
-                            align-items: center; 
-                            justify-content: center; 
-                            height: 100%; 
-                            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
-                            border-radius: 10px;
-                            text-align: center;
-                            color: #1e3a5f;
-                            font-family: inherit;
-                            border: 2px dashed #32d74b;
-                        ">
-                            <div>
-                                <div style="font-size: 64px; margin-bottom: 15px;">🗺️</div>
-                                <h3 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 18px; font-weight: 600;">ZIP Code ${zipcode}</h3>
-                                <p style="margin: 0; color: #6c757d; font-size: 14px;">Map view not available</p>
-                                <p style="margin: 8px 0 0 0; color: #32d74b; font-size: 12px; font-weight: 500;">Location data processed ✓</p>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                console.log('Map initialized successfully');
-                
-            } catch (error) {
-                console.error('Error initializing map:', error);
-                
-                // Error fallback
+                            width: 40px; 
+                            height: 40px; 
+                            border: 4px solid #32d74b; 
+                            border-top: 4px solid transparent; 
+                            border-radius: 50%; 
+                            animation: spin 1s linear infinite;
+                            margin: 0 auto 15px auto;
+                        "></div>
+                        <div style="font-weight: 600; margin-bottom: 5px;">Loading Map...</div>
+                        <div style="font-size: 12px; color: #6c757d;">ZIP Code ${zipcode}</div>
+                    </div>
+                </div>
+            `;
+
+            // Load Google Maps API
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry&callback=initializeGoogleMapCallback`;
+            script.async = true;
+            script.defer = true;
+            
+            // Store zipcode globally for callback
+            window.currentZipcode = zipcode;
+            
+            script.onerror = function() {
+                console.error('Failed to load Google Maps API');
                 mapContainer.innerHTML = `
                     <div style="
                         display: flex; 
@@ -916,14 +884,173 @@
                         background: #f8f9fa; 
                         border-radius: 10px;
                         text-align: center;
-                        color: #666;
+                        color: #dc3545;
                         font-size: 14px;
-                        border: 1px solid #dee2e6;
+                        border: 1px solid #dc3545;
                     ">
                         <div>
-                            <div style="font-size: 48px; margin-bottom: 10px; color: #1e3a5f;">📍</div>
-                            <div style="font-weight: 600; color: #1e3a5f;">ZIP Code ${zipcode}</div>
-                            <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">Map temporarily unavailable</div>
+                            <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
+                            <div style="font-weight: 600;">Map Error</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Check your Google Maps API key</div>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        // Global callback function for Google Maps API
+        window.initializeGoogleMapCallback = function() {
+            initializeGoogleMap(window.currentZipcode);
+        };
+
+        function initializeGoogleMap(zipcode) {
+            console.log('Initializing Google Map for ZIP:', zipcode);
+            
+            const mapContainer = document.getElementById('map');
+            
+            try {
+                // Initialize map centered on US
+                map = new google.maps.Map(mapContainer, {
+                    zoom: 4,
+                    center: { lat: 39.8283, lng: -98.5795 }, // Center of US
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    styles: [
+                        {
+                            featureType: 'water',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#e3f2fd' }]
+                        },
+                        {
+                            featureType: 'landscape',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#f5f5f5' }]
+                        }
+                    ]
+                });
+
+                // Initialize geocoder
+                geocoder = new google.maps.Geocoder();
+
+                // Geocode the ZIP code
+                geocoder.geocode(
+                    { 
+                        address: zipcode + ', USA',
+                        componentRestrictions: { country: 'US' }
+                    },
+                    function(results, status) {
+                        if (status === google.maps.GeocoderStatus.OK && results[0]) {
+                            const location = results[0].geometry.location;
+                            const address = results[0].formatted_address;
+                            
+                            console.log('Geocoded successfully:', location.toString(), address);
+                            
+                            // Center map on ZIP code location
+                            map.setCenter(location);
+                            map.setZoom(13);
+
+                            // Remove existing markers and circles
+                            if (currentZipMarker) {
+                                currentZipMarker.setMap(null);
+                            }
+                            if (currentZipCircle) {
+                                currentZipCircle.setMap(null);
+                            }
+
+                            // Add highlighted circle for ZIP code area
+                            currentZipCircle = new google.maps.Circle({
+                                strokeColor: '#1e3a5f',
+                                strokeOpacity: 0.8,
+                                strokeWeight: 3,
+                                fillColor: '#32d74b',
+                                fillOpacity: 0.25,
+                                map: map,
+                                center: location,
+                                radius: 3000 // 3km radius
+                            });
+
+                            // Add marker at center
+                            currentZipMarker = new google.maps.Marker({
+                                position: location,
+                                map: map,
+                                title: `ZIP Code ${zipcode}`,
+                                icon: {
+                                    path: google.maps.SymbolPath.CIRCLE,
+                                    scale: 12,
+                                    fillColor: '#32d74b',
+                                    fillOpacity: 1,
+                                    strokeColor: '#fff',
+                                    strokeWeight: 3
+                                }
+                            });
+
+                            // Add info window
+                            const infoWindow = new google.maps.InfoWindow({
+                                content: `
+                                    <div style="font-family: inherit; text-align: center; padding: 5px;">
+                                        <h4 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 16px; font-weight: 600;">ZIP Code ${zipcode}</h4>
+                                        <p style="margin: 0; color: #666; font-size: 13px;">${address.replace(', USA', '')}</p>
+                                    </div>
+                                `
+                            });
+
+                            // Open info window on marker click
+                            currentZipMarker.addListener('click', function() {
+                                infoWindow.open(map, currentZipMarker);
+                            });
+
+                            // Also open on circle click
+                            currentZipCircle.addListener('click', function() {
+                                infoWindow.open(map, currentZipMarker);
+                            });
+
+                        } else {
+                            console.error('Geocoding failed:', status);
+                            mapContainer.innerHTML = `
+                                <div style="
+                                    display: flex; 
+                                    align-items: center; 
+                                    justify-content: center; 
+                                    height: 100%; 
+                                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+                                    border-radius: 10px;
+                                    text-align: center;
+                                    color: #1e3a5f;
+                                    font-family: inherit;
+                                    border: 2px dashed #32d74b;
+                                ">
+                                    <div>
+                                        <div style="font-size: 64px; margin-bottom: 15px;">📍</div>
+                                        <h3 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 18px; font-weight: 600;">ZIP Code ${zipcode}</h3>
+                                        <p style="margin: 0; color: #6c757d; font-size: 14px;">Location not found</p>
+                                        <p style="margin: 8px 0 0 0; color: #32d74b; font-size: 12px; font-weight: 500;">Data processed ✓</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                );
+
+            } catch (error) {
+                console.error('Error initializing Google Map:', error);
+                mapContainer.innerHTML = `
+                    <div style="
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center; 
+                        height: 100%; 
+                        background: #f8f9fa; 
+                        border-radius: 10px;
+                        text-align: center;
+                        color: #dc3545;
+                        font-size: 14px;
+                        border: 1px solid #dc3545;
+                    ">
+                        <div>
+                            <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
+                            <div style="font-weight: 600;">Map Error</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Failed to initialize</div>
                         </div>
                     </div>
                 `;
