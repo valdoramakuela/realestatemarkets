@@ -525,7 +525,10 @@
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
                     pointRadius: 8,
-                    pointHoverRadius: 10
+                    pointHoverRadius: 12,
+                    pointHoverBackgroundColor: '#28a745',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 3
                 }]
             };
 
@@ -535,6 +538,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
                     layout: {
                         padding: {
                             bottom: 20
@@ -543,6 +550,32 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(30, 58, 95, 0.95)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#32d74b',
+                            borderWidth: 2,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            padding: 12,
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    return `Returns: ${context.parsed.y.toFixed(1)}%`;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -589,15 +622,24 @@
                                 display: false
                             }
                         }
+                    },
+                    onHover: function(event, activeElements) {
+                        // Pause pulsing when hovering
+                        if (activeElements.length > 0) {
+                            this.data.datasets[0].pointRadius = this.data.datasets[0].data.map(() => 8);
+                            this.update('none');
+                        }
                     }
                 }
             });
 
+            let isPulsing = true;
+            let animationFrame;
+
             // Add pulsing animation after chart is created
             setTimeout(() => {
-                let animationFrame;
                 function animatePoints() {
-                    if (returnsChart && returnsChart.data && returnsChart.data.datasets[0]) {
+                    if (returnsChart && returnsChart.data && returnsChart.data.datasets[0] && isPulsing) {
                         const time = Date.now() * 0.003;
                         const dataset = returnsChart.data.datasets[0];
                         
@@ -605,14 +647,23 @@
                         dataset.pointRadius = dataset.data.map((_, index) => {
                             const baseRadius = 8;
                             const pulse = Math.sin(time + index * 1.5) * 2;
-                            return Math.max(5, baseRadius + pulse);
+                            return Math.max(6, baseRadius + pulse);
                         });
                         
                         returnsChart.update('none');
-                        animationFrame = requestAnimationFrame(animatePoints);
                     }
+                    animationFrame = requestAnimationFrame(animatePoints);
                 }
                 animatePoints();
+
+                // Pause pulsing on hover, resume when not hovering
+                ctx.canvas.addEventListener('mousemove', function() {
+                    isPulsing = false;
+                });
+
+                ctx.canvas.addEventListener('mouseleave', function() {
+                    isPulsing = true;
+                });
             }, 500);
         }
 
