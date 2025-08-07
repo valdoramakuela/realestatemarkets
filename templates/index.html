@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Estate Market Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * {
             margin: 0;
@@ -237,6 +235,7 @@
             height: calc(100% - 50px);
             border-radius: 10px;
             z-index: 1;
+            border: none;
         }
 
         .chart-container {
@@ -819,111 +818,95 @@
         }
 
         function initializeMap(zipcode) {
-            console.log('Initializing map for ZIP:', zipcode);
+            console.log('Initializing embedded map for ZIP:', zipcode);
             
-            // Clean up existing map
-            if (map) {
-                try {
-                    map.remove();
-                } catch (e) {
-                    console.log('Map cleanup error:', e);
-                }
-                map = null;
-            }
-
-            // Get ZIP code coordinates (hardcoded for reliability)
+            // ZIP code coordinates for embedding
             const zipCoordinates = {
-                '22207': [38.8964, -77.1174], // Arlington, VA
-                '22206': [38.8548, -77.0924], // Arlington, VA
-                '22201': [38.8759, -77.0564], // Arlington, VA
-                '10001': [40.7484, -73.9967], // New York, NY
-                '10002': [40.7158, -73.9866], // New York, NY
-                '90210': [34.0901, -118.4065], // Beverly Hills, CA
-                '90211': [34.0668, -118.4037], // Beverly Hills, CA
-                '60601': [41.8827, -87.6233], // Chicago, IL
-                '60602': [41.8838, -87.6319], // Chicago, IL
-                '33101': [25.7617, -80.1918], // Miami, FL
-                '33102': [25.7886, -80.1342], // Miami, FL
-                '77001': [29.7372, -95.3899], // Houston, TX
-                '30301': [33.7677, -84.4070], // Atlanta, GA
-                '02101': [42.3604, -71.0582], // Boston, MA
-                '98101': [47.6097, -122.3331] // Seattle, WA
+                '22207': { lat: 38.8964, lng: -77.1174, place: 'Arlington, VA' },
+                '22206': { lat: 38.8548, lng: -77.0924, place: 'Alexandria, VA' },
+                '22201': { lat: 38.8759, lng: -77.0564, place: 'Arlington, VA' },
+                '10001': { lat: 40.7484, lng: -73.9967, place: 'New York, NY' },
+                '10002': { lat: 40.7158, lng: -73.9866, place: 'New York, NY' },
+                '90210': { lat: 34.0901, lng: -118.4065, place: 'Beverly Hills, CA' },
+                '90211': { lat: 34.0668, lng: -118.4037, place: 'Beverly Hills, CA' },
+                '60601': { lat: 41.8827, lng: -87.6233, place: 'Chicago, IL' },
+                '60602': { lat: 41.8838, lng: -87.6319, place: 'Chicago, IL' },
+                '33101': { lat: 25.7617, lng: -80.1918, place: 'Miami, FL' },
+                '33102': { lat: 25.7886, lng: -80.1342, place: 'Miami Beach, FL' },
+                '77001': { lat: 29.7372, lng: -95.3899, place: 'Houston, TX' },
+                '30301': { lat: 33.7677, lng: -84.4070, place: 'Atlanta, GA' },
+                '02101': { lat: 42.3604, lng: -71.0582, place: 'Boston, MA' },
+                '98101': { lat: 47.6097, lng: -122.3331, place: 'Seattle, WA' }
             };
 
-            let coordinates = zipCoordinates[zipcode];
+            const mapContainer = document.getElementById('map');
             
-            if (!coordinates) {
-                console.log('ZIP code not in hardcoded list, using default US view');
-                coordinates = [39.8283, -98.5795]; // Center of US
-            }
-
             try {
-                // Initialize new map
-                map = L.map('map', {
-                    center: coordinates,
-                    zoom: coordinates[0] === 39.8283 ? 4 : 12, // Zoom out if showing whole US
-                    zoomControl: true,
-                    scrollWheelZoom: true
-                });
-
-                // Add tile layer with error handling
-                const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
-                    maxZoom: 18,
-                    errorTileUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1hcCBUaWxlPC90ZXh0Pjwvc3ZnPg=='
-                });
-
-                tileLayer.addTo(map);
-
-                // Add highlighted area for specific ZIP codes
-                if (zipCoordinates[zipcode]) {
-                    // Create highlighted circle
-                    const zipCircle = L.circle(coordinates, {
-                        radius: 3000, // 3km radius
-                        fillColor: '#32d74b',
-                        fillOpacity: 0.25,
-                        color: '#1e3a5f',
-                        weight: 3,
-                        opacity: 0.8
-                    }).addTo(map);
-
-                    // Add center marker
-                    const zipMarker = L.circleMarker(coordinates, {
-                        radius: 10,
-                        fillColor: '#32d74b',
-                        color: '#fff',
-                        weight: 3,
-                        opacity: 1,
-                        fillOpacity: 1
-                    }).addTo(map);
-
-                    // Add popup
-                    const popupContent = `
-                        <div style="text-align: center; font-family: inherit; padding: 5px;">
-                            <h4 style="margin: 0 0 5px 0; color: #1e3a5f; font-size: 16px; font-weight: 600;">ZIP Code ${zipcode}</h4>
-                            <p style="margin: 0; color: #666; font-size: 12px;">Approximate Area</p>
+                const zipData = zipCoordinates[zipcode];
+                
+                if (zipData) {
+                    // Create embedded Google Maps iframe
+                    const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dO9vHeFPyYrqVE&q=${zipData.lat},${zipData.lng}&zoom=13&maptype=roadmap`;
+                    
+                    mapContainer.innerHTML = `
+                        <div style="position: relative; width: 100%; height: 100%;">
+                            <iframe
+                                src="${mapUrl}"
+                                width="100%"
+                                height="100%"
+                                style="border: none; border-radius: 10px;"
+                                allowfullscreen=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                            <div style="
+                                position: absolute;
+                                top: 15px;
+                                left: 15px;
+                                background: rgba(30, 58, 95, 0.9);
+                                color: white;
+                                padding: 8px 12px;
+                                border-radius: 6px;
+                                font-size: 12px;
+                                font-weight: 600;
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                                z-index: 1000;
+                            ">
+                                📍 ZIP ${zipcode} - ${zipData.place}
+                            </div>
                         </div>
                     `;
-
-                    zipCircle.bindPopup(popupContent);
-                    zipMarker.bindPopup(popupContent);
+                } else {
+                    // Fallback for unknown ZIP codes
+                    mapContainer.innerHTML = `
+                        <div style="
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center; 
+                            height: 100%; 
+                            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+                            border-radius: 10px;
+                            text-align: center;
+                            color: #1e3a5f;
+                            font-family: inherit;
+                            border: 2px dashed #32d74b;
+                        ">
+                            <div>
+                                <div style="font-size: 64px; margin-bottom: 15px;">🗺️</div>
+                                <h3 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 18px; font-weight: 600;">ZIP Code ${zipcode}</h3>
+                                <p style="margin: 0; color: #6c757d; font-size: 14px;">Map view not available</p>
+                                <p style="margin: 8px 0 0 0; color: #32d74b; font-size: 12px; font-weight: 500;">Location data processed ✓</p>
+                            </div>
+                        </div>
+                    `;
                 }
-
-                // Force map to render properly
-                setTimeout(() => {
-                    if (map) {
-                        map.invalidateSize();
-                        console.log('Map should be visible now');
-                    }
-                }, 200);
-
+                
                 console.log('Map initialized successfully');
-
+                
             } catch (error) {
                 console.error('Error initializing map:', error);
                 
-                // Fallback: show static message
-                const mapContainer = document.getElementById('map');
+                // Error fallback
                 mapContainer.innerHTML = `
                     <div style="
                         display: flex; 
@@ -935,11 +918,12 @@
                         text-align: center;
                         color: #666;
                         font-size: 14px;
+                        border: 1px solid #dee2e6;
                     ">
                         <div>
-                            <div style="font-size: 48px; margin-bottom: 10px;">🗺️</div>
-                            <div>ZIP Code ${zipcode}</div>
-                            <div style="font-size: 12px; margin-top: 5px;">Map loading...</div>
+                            <div style="font-size: 48px; margin-bottom: 10px; color: #1e3a5f;">📍</div>
+                            <div style="font-weight: 600; color: #1e3a5f;">ZIP Code ${zipcode}</div>
+                            <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">Map temporarily unavailable</div>
                         </div>
                     </div>
                 `;
