@@ -819,91 +819,168 @@
         }
 
         async function initializeMap(zipcode) {
+            // Wait for the map container to be visible
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
             // Initialize map if it doesn't exist
             if (!map) {
-                map = L.map('map', {
-                    zoomControl: true,
-                    scrollWheelZoom: true,
-                    doubleClickZoom: true,
-                    boxZoom: true,
-                    keyboard: true
-                });
+                try {
+                    map = L.map('map', {
+                        zoomControl: true,
+                        scrollWheelZoom: true,
+                        doubleClickZoom: true,
+                        boxZoom: true,
+                        keyboard: true
+                    }).setView([39.8283, -98.5795], 4); // Default US view
 
-                // Add custom styled tile layer
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
-                    maxZoom: 18
-                }).addTo(map);
+                    // Add custom styled tile layer
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors',
+                        maxZoom: 18
+                    }).addTo(map);
+                    
+                    // Force map to resize after container is ready
+                    setTimeout(() => {
+                        if (map) {
+                            map.invalidateSize();
+                        }
+                    }, 200);
+                } catch (error) {
+                    console.error('Error initializing map:', error);
+                    return;
+                }
             }
 
             // Remove existing ZIP code layer if any
             if (currentZipLayer) {
                 map.removeLayer(currentZipLayer);
+                currentZipLayer = null;
             }
 
             try {
                 // Get ZIP code coordinates using a geocoding service
-                const geocodeResponse = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${zipcode}&countrycodes=us&addressdetails=1&limit=1`);
+                const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${zipcode}&countrycodes=us&addressdetails=1&limit=1`;
+                console.log('Geocoding ZIP:', zipcode);
+                
+                const geocodeResponse = await fetch(geocodeUrl);
                 const geocodeData = await geocodeResponse.json();
+                
+                console.log('Geocode response:', geocodeData);
                 
                 if (geocodeData && geocodeData.length > 0) {
                     const location = geocodeData[0];
                     const lat = parseFloat(location.lat);
                     const lon = parseFloat(location.lon);
                     
+                    console.log('Found coordinates:', lat, lon);
+                    
                     // Center map on the ZIP code
-                    map.setView([lat, lon], 13);
+                    map.setView([lat, lon], 12);
                     
                     // Create a highlighted circle for the ZIP code area
-                    currentZipLayer = L.circle([lat, lon], {
+                    currentZipLayer = L.layerGroup();
+                    
+                    const zipCircle = L.circle([lat, lon], {
                         radius: 3000, // 3km radius approximation
                         fillColor: '#32d74b',
                         fillOpacity: 0.3,
                         color: '#1e3a5f',
                         weight: 3,
                         opacity: 0.8
-                    }).addTo(map);
+                    });
                     
-                    // Add a popup with ZIP code info
+                    // Add a marker at the center
+                    const zipMarker = L.circleMarker([lat, lon], {
+                        radius: 8,
+                        fillColor: '#32d74b',
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 1
+                    });
+                    
+                    // Add popup content
                     const popupContent = `
                         <div style="text-align: center; font-family: inherit;">
                             <h4 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 16px;">ZIP Code ${zipcode}</h4>
                             <p style="margin: 0; color: #666; font-size: 13px;">${location.display_name.split(',').slice(0, 3).join(', ')}</p>
                         </div>
                     `;
-                    currentZipLayer.bindPopup(popupContent);
                     
-                    // Add a marker at the center
-                    const customIcon = L.divIcon({
-                        className: 'custom-marker',
-                        html: `
-                            <div style="
-                                background: #32d74b;
-                                border: 3px solid #fff;
-                                border-radius: 50%;
-                                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                                width: 20px;
-                                height: 20px;
-                                margin: -10px 0 0 -10px;
-                            "></div>
-                        `,
-                        iconSize: [20, 20],
-                        iconAnchor: [10, 10]
-                    });
+                    zipCircle.bindPopup(popupContent);
+                    zipMarker.bindPopup(popupContent);
                     
-                    L.marker([lat, lon], { icon: customIcon })
-                        .addTo(map)
-                        .bindPopup(popupContent);
+                    currentZipLayer.addLayer(zipCircle);
+                    currentZipLayer.addLayer(zipMarker);
+                    currentZipLayer.addTo(map);
+                    
+                    // Force map refresh
+                    setTimeout(() => {
+                        if (map) {
+                            map.invalidateSize();
+                        }
+                    }, 100);
                         
                 } else {
                     console.warn('Could not geocode ZIP code:', zipcode);
-                    // Fallback: show a generic US map view
-                    map.setView([39.8283, -98.5795], 4);
+                    // Add a fallback marker for the ZIP code
+                    addFallbackMarker(zipcode);
                 }
                 
             } catch (error) {
-                console.error('Error initializing map:', error);
-                // Fallback: show a generic US map view
+                console.error('Error geocoding ZIP code:', error);
+                addFallbackMarker(zipcode);
+            }
+        }
+
+        function addFallbackMarker(zipcode) {
+            // For common ZIP codes, we can add approximate coordinates
+            const commonZips = {
+                '22207': [38.8964, -77.1174], // Arlington, VA
+                '10001': [40.7484, -73.9967], // New York, NY
+                '90210': [34.0901, -118.4065], // Beverly Hills, CA
+                '60601': [41.8827, -87.6233], // Chicago, IL
+                '33101': [25.7617, -80.1918]  // Miami, FL
+            };
+            
+            if (commonZips[zipcode]) {
+                const [lat, lon] = commonZips[zipcode];
+                map.setView([lat, lon], 12);
+                
+                currentZipLayer = L.layerGroup();
+                
+                const zipCircle = L.circle([lat, lon], {
+                    radius: 3000,
+                    fillColor: '#32d74b',
+                    fillOpacity: 0.3,
+                    color: '#1e3a5f',
+                    weight: 3,
+                    opacity: 0.8
+                });
+                
+                const zipMarker = L.circleMarker([lat, lon], {
+                    radius: 8,
+                    fillColor: '#32d74b',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 1
+                });
+                
+                const popupContent = `
+                    <div style="text-align: center; font-family: inherit;">
+                        <h4 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 16px;">ZIP Code ${zipcode}</h4>
+                    </div>
+                `;
+                
+                zipCircle.bindPopup(popupContent);
+                zipMarker.bindPopup(popupContent);
+                
+                currentZipLayer.addLayer(zipCircle);
+                currentZipLayer.addLayer(zipMarker);
+                currentZipLayer.addTo(map);
+            } else {
+                // Just center on US if no coordinates found
                 map.setView([39.8283, -98.5795], 4);
             }
         }
