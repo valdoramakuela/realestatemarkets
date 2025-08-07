@@ -439,6 +439,7 @@
         function displayDashboard(data, zipcode) {
             const dashboard = document.getElementById('dashboard');
             const statsGrid = document.getElementById('statsGrid');
+            loadGoogleMapsAndInitialize(zipcode);
             
             // Clear previous content
             statsGrid.innerHTML = '';
