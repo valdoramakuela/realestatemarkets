@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Estate Market Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,7 +16,7 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #FFFFFF
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
             min-height: 100vh;
             color: #333;
             line-height: 1.6;
@@ -193,6 +195,50 @@
             margin-top: 35px;
         }
 
+        .map-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .map-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            height: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .map-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #32d74b 0%, #1e3a5f 100%);
+            z-index: 1000;
+        }
+
+        .map-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+
+        #map {
+            width: 100%;
+            height: calc(100% - 50px);
+            border-radius: 10px;
+            z-index: 1;
+        }
+
         .chart-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
@@ -291,7 +337,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Real Estate Market Analysis Dashboard</h1>
+        <h1>🏠 Real Estate Market Dashboard</h1>
         
         <div class="search-section">
             <form class="search-form" id="searchForm">
@@ -322,6 +368,13 @@
                     <canvas id="metricsChart"></canvas>
                 </div>
             </div>
+
+            <div class="map-section">
+                <div class="map-container">
+                    <h3 class="map-title">ZIP Code Area Map</h3>
+                    <div id="map"></div>
+                </div>
+            </div>
         </div>
 
         <div class="no-data" id="noData" style="display: none;">
@@ -333,6 +386,8 @@
     <script>
         let returnsChart = null;
         let metricsChart = null;
+        let map = null;
+        let currentZipLayer = null;
 
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -761,6 +816,96 @@
 
         function showNoData() {
             document.getElementById('noData').style.display = 'block';
+        }
+
+        async function initializeMap(zipcode) {
+            // Initialize map if it doesn't exist
+            if (!map) {
+                map = L.map('map', {
+                    zoomControl: true,
+                    scrollWheelZoom: true,
+                    doubleClickZoom: true,
+                    boxZoom: true,
+                    keyboard: true
+                });
+
+                // Add custom styled tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 18
+                }).addTo(map);
+            }
+
+            // Remove existing ZIP code layer if any
+            if (currentZipLayer) {
+                map.removeLayer(currentZipLayer);
+            }
+
+            try {
+                // Get ZIP code coordinates using a geocoding service
+                const geocodeResponse = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${zipcode}&countrycodes=us&addressdetails=1&limit=1`);
+                const geocodeData = await geocodeResponse.json();
+                
+                if (geocodeData && geocodeData.length > 0) {
+                    const location = geocodeData[0];
+                    const lat = parseFloat(location.lat);
+                    const lon = parseFloat(location.lon);
+                    
+                    // Center map on the ZIP code
+                    map.setView([lat, lon], 13);
+                    
+                    // Create a highlighted circle for the ZIP code area
+                    currentZipLayer = L.circle([lat, lon], {
+                        radius: 3000, // 3km radius approximation
+                        fillColor: '#32d74b',
+                        fillOpacity: 0.3,
+                        color: '#1e3a5f',
+                        weight: 3,
+                        opacity: 0.8
+                    }).addTo(map);
+                    
+                    // Add a popup with ZIP code info
+                    const popupContent = `
+                        <div style="text-align: center; font-family: inherit;">
+                            <h4 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 16px;">ZIP Code ${zipcode}</h4>
+                            <p style="margin: 0; color: #666; font-size: 13px;">${location.display_name.split(',').slice(0, 3).join(', ')}</p>
+                        </div>
+                    `;
+                    currentZipLayer.bindPopup(popupContent);
+                    
+                    // Add a marker at the center
+                    const customIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `
+                            <div style="
+                                background: #32d74b;
+                                border: 3px solid #fff;
+                                border-radius: 50%;
+                                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                                width: 20px;
+                                height: 20px;
+                                margin: -10px 0 0 -10px;
+                            "></div>
+                        `,
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+                    
+                    L.marker([lat, lon], { icon: customIcon })
+                        .addTo(map)
+                        .bindPopup(popupContent);
+                        
+                } else {
+                    console.warn('Could not geocode ZIP code:', zipcode);
+                    // Fallback: show a generic US map view
+                    map.setView([39.8283, -98.5795], 4);
+                }
+                
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                // Fallback: show a generic US map view
+                map.setView([39.8283, -98.5795], 4);
+            }
         }
     </script>
 </body>
