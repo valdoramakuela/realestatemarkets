@@ -1295,7 +1295,8 @@
                         y: {
                             ticks: {
                                 callback: function(value) {
-                                    return ' + (value / 1000) + 'K';
+                                    return '
+                 + (value / 1000) + 'K';
                                 },
                                 color: '#6c757d'
                             },
@@ -1326,27 +1327,37 @@
         }
 
         function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
-            document.getElementById('searchBtn').disabled = show;
+            const loading = document.getElementById('loading');
+            const searchBtn = document.getElementById('searchBtn');
+            if (loading) loading.style.display = show ? 'block' : 'none';
+            if (searchBtn) searchBtn.disabled = show;
         }
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
         }
 
         function hideError() {
-            document.getElementById('errorMessage').style.display = 'none';
+            const errorDiv = document.getElementById('errorMessage');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
         }
 
         function hideDashboard() {
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('noData').style.display = 'none';
+            const dashboard = document.getElementById('dashboard');
+            const noData = document.getElementById('noData');
+            if (dashboard) dashboard.style.display = 'none';
+            if (noData) noData.style.display = 'none';
         }
 
         function showNoData() {
-            document.getElementById('noData').style.display = 'block';
+            const noData = document.getElementById('noData');
+            if (noData) noData.style.display = 'block';
         }
 
         function loadGoogleMapsAndInitialize(searchTerm) {
@@ -1562,177 +1573,6 @@
                     </div>
                 `;
             }
-        }
-
-        // Additional required functions
-        function displayDashboard(data, searchTerm) {
-            const dashboard = document.getElementById('dashboard');
-            const statsGrid = document.getElementById('statsGrid');
-            loadGoogleMapsAndInitialize(searchTerm);
-            
-            // Clear previous content
-            statsGrid.innerHTML = '';
-
-            // Market Grade
-            if (data.grade && data.grade.result) {
-                const gradeCard = createStatCard(
-                    data.grade.result.market_grade || 'N/A',
-                    'Market Grade',
-                    'fas fa-star',
-                    '#32d74b',
-                    getGradeClass(data.grade.result.market_grade)
-                );
-                statsGrid.appendChild(gradeCard);
-            }
-
-            // Property Details
-            if (data.details && data.details.result && data.details.result.single_family) {
-                const sf = data.details.result.single_family;
-                
-                if (sf.price_median) {
-                    statsGrid.appendChild(createStatCard(
-                        formatCurrency(sf.price_median),
-                        'Median Price',
-                        'fas fa-dollar-sign',
-                        '#1e3a5f'
-                    ));
-                }
-
-                if (sf.inventory_total) {
-                    statsGrid.appendChild(createStatCard(
-                        Math.round(sf.inventory_total),
-                        'Total Inventory',
-                        'fas fa-home',
-                        '#2c5282'
-                    ));
-                }
-
-                if (sf.days_on_market_median) {
-                    statsGrid.appendChild(createStatCard(
-                        Math.round(sf.days_on_market_median),
-                        'Days on Market',
-                        'fas fa-calendar-alt',
-                        '#28a745'
-                    ));
-                }
-
-                if (sf.months_of_inventory_median) {
-                    statsGrid.appendChild(createStatCard(
-                        sf.months_of_inventory_median.toFixed(1),
-                        'Months Supply',
-                        'fas fa-warehouse',
-                        '#6f42c1'
-                    ));
-                }
-
-                if (sf.estimated_sales_total) {
-                    statsGrid.appendChild(createStatCard(
-                        Math.round(sf.estimated_sales_total),
-                        'Estimated Sales',
-                        'fas fa-handshake',
-                        '#fd7e14'
-                    ));
-                }
-            }
-
-            // Rental Yield
-            if (data.rental && data.rental.result) {
-                const rental = data.rental.result;
-                if (rental.gross_yield_median) {
-                    statsGrid.appendChild(createStatCard(
-                        (rental.gross_yield_median * 100).toFixed(2) + '%',
-                        'Rental Yield',
-                        'fas fa-percentage',
-                        '#20c997'
-                    ));
-                }
-            }
-
-            // Create charts
-            createCharts(data);
-            
-            dashboard.style.display = 'block';
-        }
-
-        function createStatCard(value, label, icon, color, extraClass = '') {
-            const card = document.createElement('div');
-            card.className = 'stat-card';
-            
-            let displayValue = value;
-            if (extraClass && label === 'Market Grade') {
-                displayValue = `<span class="stat-value">${value}</span><div class="grade-badge ${extraClass}">${value}</div>`;
-            } else {
-                displayValue = `<span class="stat-value">${value}</span>`;
-            }
-            
-            card.innerHTML = `
-                <div class="stat-icon" style="background: ${color}">
-                    <i class="${icon}"></i>
-                </div>
-                ${displayValue}
-                <div class="stat-label">${label}</div>
-            `;
-            
-            return card;
-        }
-
-        function getGradeClass(grade) {
-            if (!grade) return '';
-            switch (grade.toUpperCase()) {
-                case 'A': return 'grade-a';
-                case 'B': return 'grade-b';
-                case 'C': return 'grade-c';
-                case 'D': return 'grade-d';
-                default: return '';
-            }
-        }
-
-        function createCharts(data) {
-            // Chart creation code here - simplified for now
-            console.log('Creating charts with data:', data);
-        }
-
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-            }).format(amount);
-        }
-
-        function showLoading(show) {
-            const loading = document.getElementById('loading');
-            const searchBtn = document.getElementById('searchBtn');
-            if (loading) loading.style.display = show ? 'block' : 'none';
-            if (searchBtn) searchBtn.disabled = show;
-        }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            if (errorDiv) {
-                errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
-            }
-        }
-
-        function hideError() {
-            const errorDiv = document.getElementById('errorMessage');
-            if (errorDiv) {
-                errorDiv.style.display = 'none';
-            }
-        }
-
-        function hideDashboard() {
-            const dashboard = document.getElementById('dashboard');
-            const noData = document.getElementById('noData');
-            if (dashboard) dashboard.style.display = 'none';
-            if (noData) noData.style.display = 'none';
-        }
-
-        function showNoData() {
-            const noData = document.getElementById('noData');
-            if (noData) noData.style.display = 'block';
         }
     </script>
 </body>
