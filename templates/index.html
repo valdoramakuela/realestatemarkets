@@ -790,18 +790,38 @@
             const searchInput = document.getElementById('searchInput');
             const searchBtnText = document.getElementById('searchBtnText');
             
+            console.log('Updating UI for type:', type);
+            console.log('Search input element:', searchInput);
+            console.log('Search button text element:', searchBtnText);
+            
             if (type === 'zipcode') {
-                searchInput.placeholder = 'Enter ZIP code (e.g., 22207)';
-                searchBtnText.textContent = 'Search by ZIP Code';
+                if (searchInput) {
+                    searchInput.placeholder = 'Enter ZIP code (e.g., 22207)';
+                    console.log('Updated placeholder to ZIP code');
+                }
+                if (searchBtnText) {
+                    searchBtnText.textContent = 'SEARCH BY ZIP CODE';
+                    console.log('Updated button text to ZIP code');
+                }
             } else {
-                searchInput.placeholder = 'Enter full address (e.g., 123 Main St, Arlington, VA)';
-                searchBtnText.textContent = 'Search by Address';
+                if (searchInput) {
+                    searchInput.placeholder = 'Enter full address (e.g., 123 Main St, Arlington, VA)';
+                    console.log('Updated placeholder to address');
+                }
+                if (searchBtnText) {
+                    searchBtnText.textContent = 'SEARCH BY ADDRESS';
+                    console.log('Updated button text to address');
+                }
             }
             
             // Clear previous search and hide dashboard
+            if (searchInput) {
+                searchInput.value = '';
+            }
             hideDashboard();
-            searchInput.value = '';
             hideError();
+            
+            console.log('Search type update complete');
         }
 
         function selectSection(section) {
@@ -809,10 +829,11 @@
             // Handle other navigation sections
         }
 
-        // Navigation functionality
+        // Search form submission - move this after DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
+            const searchForm = document.getElementById('searchForm');
             
             // Mobile menu toggle
             if (menuToggle) {
@@ -827,26 +848,28 @@
                 dropdownArrow.classList.add('rotated');
             }
             
+            // Search form submission
+            if (searchForm) {
+                searchForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const searchValue = document.getElementById('searchInput').value.trim();
+                    
+                    console.log('Form submitted with search type:', currentSearchType, 'value:', searchValue);
+                    
+                    if (!searchValue) {
+                        showError('Please enter a valid search term');
+                        return;
+                    }
+
+                    if (currentSearchType === 'zipcode') {
+                        await fetchMarketData(searchValue);
+                    } else {
+                        await fetchMarketDataByAddress(searchValue);
+                    }
+                });
+            }
+            
             console.log('Navigation initialized');
-        });
-
-        // Search form submission
-        document.getElementById('searchForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const searchValue = document.getElementById('searchInput').value.trim();
-            
-            console.log('Form submitted with search type:', currentSearchType, 'value:', searchValue);
-            
-            if (!searchValue) {
-                showError('Please enter a valid search term');
-                return;
-            }
-
-            if (currentSearchType === 'zipcode') {
-                await fetchMarketData(searchValue);
-            } else {
-                await fetchMarketDataByAddress(searchValue);
-            }
         });
 
         async function fetchMarketData(zipcode) {
