@@ -92,6 +92,39 @@
             font-size: 16px;
         }
 
+        .submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .submenu.open {
+            max-height: 200px;
+        }
+
+        .submenu-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px 10px 50px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .submenu-item:hover, .submenu-item.active {
+            background: rgba(50, 215, 75, 0.1);
+            color: #32d74b;
+        }
+
+        .submenu-item i {
+            width: 16px;
+            margin-right: 12px;
+            font-size: 14px;
+        }
+
         /* Main Content */
         .main-content {
             margin-left: 280px;
@@ -161,27 +194,13 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
+        /* Remove search tabs styles */
         .search-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #e1e5e9;
+            display: none;
         }
 
         .search-tab {
-            padding: 12px 20px;
-            border: none;
-            background: none;
-            color: #6c757d;
-            font-weight: 500;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .search-tab.active {
-            color: #32d74b;
-            border-bottom-color: #32d74b;
+            display: none;
         }
 
         .search-form {
@@ -555,27 +574,22 @@
         
         <nav class="nav-menu">
             <div class="nav-section">
-                <div class="nav-section-title">Main</div>
-                <a href="#" class="nav-item active" data-section="dashboard">
-                    <i class="fas fa-tachometer-alt"></i>
-                    Dashboard
-                </a>
-                <a href="#" class="nav-item" data-section="analytics">
+                <div class="nav-section-title">Analytics</div>
+                <div class="nav-item" data-section="analytics">
                     <i class="fas fa-chart-bar"></i>
-                    Market Analytics
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-section-title">Search Tools</div>
-                <a href="#" class="nav-item" data-section="zipcode">
-                    <i class="fas fa-map-pin"></i>
-                    Search by ZIP Code
-                </a>
-                <a href="#" class="nav-item" data-section="address">
-                    <i class="fas fa-home"></i>
-                    Search by Address
-                </a>
+                    <span>Market Analytics</span>
+                    <i class="fas fa-chevron-down" style="margin-left: auto; transition: transform 0.3s ease;"></i>
+                </div>
+                <div class="submenu" id="analyticsSubmenu">
+                    <a href="#" class="submenu-item active" data-search-type="zipcode">
+                        <i class="fas fa-map-pin"></i>
+                        Search by ZIP Code
+                    </a>
+                    <a href="#" class="submenu-item" data-search-type="address">
+                        <i class="fas fa-home"></i>
+                        Search by Address
+                    </a>
+                </div>
             </div>
             
             <div class="nav-section">
@@ -613,17 +627,12 @@
         <!-- Content Area -->
         <div class="content-area">
             <!-- Search Section -->
-            <div class="search-section">
-                <div class="search-tabs">
-                    <button class="search-tab active" data-tab="zipcode">ZIP Code Search</button>
-                    <button class="search-tab" data-tab="address">Address Search</button>
-                </div>
-                
+            <div class="search-section" id="searchSection">
                 <form class="search-form" id="searchForm">
                     <input type="text" class="search-input" id="searchInput" placeholder="Enter ZIP code (e.g., 22207)" required>
                     <button type="submit" class="search-btn" id="searchBtn">
                         <i class="fas fa-search"></i>
-                        Search Market Data
+                        <span id="searchBtnText">Search Market Data</span>
                     </button>
                 </form>
             </div>
@@ -723,57 +732,74 @@
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
-            const navItems = document.querySelectorAll('.nav-item');
-            const searchTabs = document.querySelectorAll('.search-tab');
+            const analyticsItem = document.querySelector('[data-section="analytics"]');
+            const analyticsSubmenu = document.getElementById('analyticsSubmenu');
+            const submenuItems = document.querySelectorAll('.submenu-item');
+            const searchInput = document.getElementById('searchInput');
+            const searchBtnText = document.getElementById('searchBtnText');
+            
+            let currentSearchType = 'zipcode';
 
             // Mobile menu toggle
             menuToggle.addEventListener('click', function() {
                 sidebar.classList.toggle('open');
             });
 
-            // Navigation items
-            navItems.forEach(item => {
+            // Analytics dropdown toggle
+            analyticsItem.addEventListener('click', function(e) {
+                e.preventDefault();
+                analyticsSubmenu.classList.toggle('open');
+                const chevron = this.querySelector('.fa-chevron-down');
+                chevron.style.transform = analyticsSubmenu.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+
+            // Submenu item selection
+            submenuItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
-                    navItems.forEach(nav => nav.classList.remove('active'));
+                    
+                    // Update active states
+                    submenuItems.forEach(sub => sub.classList.remove('active'));
                     this.classList.add('active');
                     
-                    const section = this.dataset.section;
-                    // Handle section switching here
-                    console.log('Navigating to:', section);
+                    // Update search type
+                    currentSearchType = this.dataset.searchType;
+                    
+                    // Update UI based on selection
+                    if (currentSearchType === 'zipcode') {
+                        searchInput.placeholder = 'Enter ZIP code (e.g., 22207)';
+                        searchBtnText.textContent = 'Search by ZIP Code';
+                    } else {
+                        searchInput.placeholder = 'Enter full address (e.g., 123 Main St, Arlington, VA)';
+                        searchBtnText.textContent = 'Search by Address';
+                    }
+                    
+                    // Clear previous search and hide dashboard
+                    hideDashboard();
+                    searchInput.value = '';
+                    
+                    console.log('Selected search type:', currentSearchType);
                 });
             });
 
-            // Search tabs
-            searchTabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    searchTabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const tabType = this.dataset.tab;
-                    const searchInput = document.getElementById('searchInput');
-                    
-                    if (tabType === 'zipcode') {
-                        searchInput.placeholder = 'Enter ZIP code (e.g., 22207)';
-                    } else {
-                        searchInput.placeholder = 'Enter full address (e.g., 123 Main St, Arlington, VA)';
-                    }
-                });
-            });
+            // Initialize with ZIP code search
+            analyticsSubmenu.classList.add('open');
+            const chevron = analyticsItem.querySelector('.fa-chevron-down');
+            chevron.style.transform = 'rotate(180deg)';
         });
 
         // Search form submission
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const searchValue = document.getElementById('searchInput').value.trim();
-            const activeTab = document.querySelector('.search-tab.active').dataset.tab;
+            const currentSearchType = document.querySelector('.submenu-item.active').dataset.searchType;
             
             if (!searchValue) {
                 showError('Please enter a valid search term');
                 return;
             }
 
-            if (activeTab === 'zipcode') {
+            if (currentSearchType === 'zipcode') {
                 await fetchMarketData(searchValue);
             } else {
                 await fetchMarketDataByAddress(searchValue);
