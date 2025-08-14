@@ -13,7 +13,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -21,7 +20,6 @@
             color: #333;
             line-height: 1.6;
         }
-
         /* Sidebar Styles */
         .sidebar {
             position: fixed;
@@ -34,12 +32,10 @@
             z-index: 1000;
             overflow-y: auto;
         }
-
         .sidebar-header {
             padding: 25px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-
         .logo {
             color: #32d74b;
             font-size: 1.8rem;
@@ -48,19 +44,15 @@
             align-items: center;
             gap: 10px;
         }
-
         .logo i {
             font-size: 2rem;
         }
-
         .nav-menu {
             padding: 20px 0;
         }
-
         .nav-section {
             margin-bottom: 30px;
         }
-
         .nav-section-title {
             color: rgba(255,255,255,0.6);
             font-size: 12px;
@@ -69,7 +61,6 @@
             letter-spacing: 1px;
             padding: 0 20px 10px 20px;
         }
-
         .nav-item {
             display: flex;
             align-items: center;
@@ -80,26 +71,13 @@
             cursor: pointer;
             position: relative;
         }
-
         .nav-item:hover {
             background: rgba(50, 215, 75, 0.15);
             color: #32d74b;
         }
-
         .nav-item.has-submenu {
             border-right: none;
         }
-
-        .nav-item.has-submenu:hover {
-            border-right: none;
-        }
-
-        .nav-item i {
-            width: 20px;
-            margin-right: 15px;
-            font-size: 16px;
-        }
-
         .submenu {
             max-height: 0;
             overflow: hidden;
@@ -108,12 +86,10 @@
             border-radius: 0 0 8px 8px;
             margin: 0 10px;
         }
-
         .submenu.open {
             max-height: 200px;
             padding: 5px 0;
         }
-
         .submenu-item {
             display: flex;
             align-items: center;
@@ -125,41 +101,34 @@
             font-size: 14px;
             border-left: 3px solid transparent;
         }
-
         .submenu-item:hover {
             background: rgba(50, 215, 75, 0.1);
             color: #32d74b;
         }
-
         .submenu-item.active {
             background: rgba(50, 215, 75, 0.15);
             color: #32d74b;
             border-left-color: #32d74b;
         }
-
         .submenu-item i {
             width: 16px;
             margin-right: 12px;
             font-size: 14px;
         }
-
         .dropdown-arrow {
             margin-left: auto;
             transition: transform 0.3s ease;
             font-size: 12px;
         }
-
         .dropdown-arrow.rotated {
             transform: rotate(180deg);
         }
-
         /* Main Content */
         .main-content {
             margin-left: 280px;
             min-height: 100vh;
             padding: 0;
         }
-
         /* Top Header */
         .top-header {
             background: rgba(255, 255, 255, 0.95);
@@ -173,20 +142,17 @@
             top: 0;
             z-index: 100;
         }
-
         .page-title {
             font-size: 2rem;
             font-weight: 700;
             color: #1e3a5f;
             margin: 0;
         }
-
         .header-actions {
             display: flex;
             gap: 15px;
             align-items: center;
         }
-
         .refresh-btn {
             background: #32d74b;
             color: white;
@@ -201,17 +167,14 @@
             gap: 8px;
             transition: all 0.3s ease;
         }
-
         .refresh-btn:hover {
             background: #28a745;
             transform: translateY(-1px);
         }
-
         /* Content Area */
         .content-area {
             padding: 30px;
         }
-
         /* Search Section */
         .search-section {
             background: rgba(255, 255, 255, 0.95);
@@ -221,23 +184,12 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
-        /* Remove search tabs styles */
-        .search-tabs {
-            display: none;
-        }
-
-        .search-tab {
-            display: none;
-        }
-
         .search-form {
             display: flex;
             gap: 15px;
             align-items: center;
             flex-wrap: wrap;
         }
-
         .search-input {
             flex: 1;
             min-width: 300px;
@@ -248,14 +200,12 @@
             transition: all 0.3s ease;
             background: #f8f9fa;
         }
-
         .search-input:focus {
             outline: none;
             border-color: #32d74b;
             background: white;
             box-shadow: 0 4px 12px rgba(50, 215, 75, 0.2);
         }
-
         .search-btn {
             padding: 15px 25px;
             background: linear-gradient(135deg, #32d74b 0%, #28a745 100%);
@@ -272,18 +222,15 @@
             align-items: center;
             gap: 8px;
         }
-
         .search-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(50, 215, 75, 0.3);
         }
-
         .search-btn:disabled {
             opacity: 0.7;
             cursor: not-allowed;
             transform: none;
         }
-
         /* Dashboard Grid */
         .dashboard-grid {
             display: grid;
@@ -291,26 +238,22 @@
             gap: 30px;
             margin-bottom: 30px;
         }
-
         .main-panel {
             display: flex;
             flex-direction: column;
             gap: 25px;
         }
-
         .side-panel {
             display: flex;
             flex-direction: column;
             gap: 25px;
         }
-
         /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
         }
-
         .stat-card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
@@ -322,7 +265,6 @@
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
         .stat-card::before {
             content: '';
             position: absolute;
@@ -332,12 +274,10 @@
             height: 4px;
             background: linear-gradient(135deg, #32d74b 0%, #1e3a5f 100%);
         }
-
         .stat-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 30px rgba(0,0,0,0.12);
         }
-
         .stat-icon {
             width: 50px;
             height: 50px;
@@ -349,7 +289,6 @@
             font-size: 20px;
             color: white;
         }
-
         .stat-value {
             font-size: 2rem;
             font-weight: 700;
@@ -357,7 +296,6 @@
             margin-bottom: 8px;
             display: block;
         }
-
         .stat-label {
             color: #6c757d;
             font-size: 13px;
@@ -365,7 +303,6 @@
             letter-spacing: 1px;
             font-weight: 500;
         }
-
         /* Chart Containers */
         .chart-container {
             background: rgba(255, 255, 255, 0.95);
@@ -376,19 +313,15 @@
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
         .chart-container.large {
             height: 400px;
         }
-
         .chart-container.medium {
             height: 320px;
         }
-
         .chart-container.small {
             height: 250px;
         }
-
         .chart-header {
             display: flex;
             justify-content: space-between;
@@ -397,24 +330,20 @@
             padding-bottom: 15px;
             border-bottom: 1px solid #e1e5e9;
         }
-
         .chart-title {
             font-size: 1.4rem;
             font-weight: 600;
             color: #1e3a5f;
         }
-
         .chart-subtitle {
             font-size: 14px;
             color: #6c757d;
             margin-top: 5px;
         }
-
         .chart-actions {
             display: flex;
             gap: 10px;
         }
-
         .chart-btn {
             padding: 6px 12px;
             border: 1px solid #e1e5e9;
@@ -424,12 +353,10 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
         .chart-btn:hover {
             border-color: #32d74b;
             color: #32d74b;
         }
-
         /* Map Container */
         .map-container {
             background: rgba(255, 255, 255, 0.95);
@@ -441,14 +368,12 @@
             height: 400px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
         #map {
             width: 100%;
             height: calc(100% - 60px);
             border-radius: 10px;
             border: none;
         }
-
         /* Loading and Error States */
         .loading {
             display: none;
@@ -457,7 +382,6 @@
             color: #1e3a5f;
             font-size: 18px;
         }
-
         .loading::after {
             content: '';
             display: inline-block;
@@ -469,11 +393,9 @@
             border-top-color: #32d74b;
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
         .error-message {
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
@@ -485,11 +407,9 @@
             box-shadow: 0 5px 15px rgba(238, 90, 36, 0.3);
             display: none;
         }
-
         .dashboard {
             display: none;
         }
-
         .no-data {
             text-align: center;
             padding: 60px 20px;
@@ -497,17 +417,14 @@
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
-
         .no-data h3 {
             color: #6c757d;
             font-size: 1.5rem;
             margin-bottom: 10px;
         }
-
         .no-data p {
             color: #adb5bd;
         }
-
         /* Grade Badge */
         .grade-badge {
             display: inline-block;
@@ -517,62 +434,49 @@
             font-size: 18px;
             margin-top: 10px;
         }
-
         .grade-a { background: #32d74b; color: white; }
         .grade-b { background: #28a745; color: white; }
         .grade-c { background: #1e3a5f; color: white; }
         .grade-d { background: #2c5282; color: white; }
-
         /* Mobile Responsive */
         @media (max-width: 1024px) {
             .sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
             }
-
             .sidebar.open {
                 transform: translateX(0);
             }
-
             .main-content {
                 margin-left: 0;
             }
-
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
-
             .search-form {
                 flex-direction: column;
             }
-
             .search-input {
                 min-width: 100%;
             }
         }
-
         @media (max-width: 768px) {
             .content-area {
                 padding: 20px 15px;
             }
-
             .top-header {
                 padding: 15px 20px;
             }
-
             .page-title {
                 font-size: 1.5rem;
             }
-
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-
             .chart-container {
                 height: 280px !important;
             }
         }
-
         /* Menu Toggle for Mobile */
         .menu-toggle {
             display: none;
@@ -582,7 +486,6 @@
             color: #1e3a5f;
             cursor: pointer;
         }
-
         @media (max-width: 1024px) {
             .menu-toggle {
                 display: block;
@@ -599,7 +502,6 @@
                 RealEstate Analytics
             </div>
         </div>
-        
         <nav class="nav-menu">
             <div class="nav-section">
                 <div class="nav-section-title">Analytics</div>
@@ -619,7 +521,6 @@
                     </div>
                 </div>
             </div>
-            
             <div class="nav-section">
                 <div class="nav-section-title">Reports</div>
                 <div class="nav-item" onclick="selectSection('trends')">
@@ -633,7 +534,6 @@
             </div>
         </nav>
     </div>
-
     <!-- Main Content -->
     <div class="main-content">
         <!-- Top Header -->
@@ -651,7 +551,6 @@
                 </button>
             </div>
         </div>
-
         <!-- Content Area -->
         <div class="content-area">
             <!-- Search Section -->
@@ -664,20 +563,16 @@
                     </button>
                 </form>
             </div>
-
             <div class="loading" id="loading">
                 Fetching market data...
             </div>
-
             <div class="error-message" id="errorMessage"></div>
-
             <!-- Dashboard Content -->
             <div class="dashboard" id="dashboard">
                 <!-- Stats Grid -->
                 <div class="stats-grid" id="statsGrid">
                     <!-- Stats will be populated here -->
                 </div>
-
                 <!-- Dashboard Grid -->
                 <div class="dashboard-grid">
                     <!-- Main Panel -->
@@ -698,7 +593,6 @@
                             </div>
                             <canvas id="returnsChart"></canvas>
                         </div>
-
                         <!-- Map Container -->
                         <div class="map-container">
                             <div class="chart-header">
@@ -710,7 +604,6 @@
                             <div id="map"></div>
                         </div>
                     </div>
-
                     <!-- Side Panel -->
                     <div class="side-panel">
                         <!-- Market Metrics Chart -->
@@ -723,7 +616,6 @@
                             </div>
                             <canvas id="metricsChart"></canvas>
                         </div>
-
                         <!-- Additional Chart Placeholder -->
                         <div class="chart-container medium">
                             <div class="chart-header">
@@ -737,7 +629,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="no-data" id="noData" style="display: none;">
                 <h3>No Data Available</h3>
                 <p>Please search for a ZIP code or address to view market analytics</p>
@@ -754,114 +645,69 @@
         let currentZipMarker = null;
         let currentZipCircle = null;
         let currentSearchType = 'zipcode';
-
         const GOOGLE_MAPS_API_KEY = 'AIzaSyBHGYla18wlILgHfqWYQm1-MfwkarMUbvA';
 
-        // Global functions for navigation - defined at global scope
+        // Global functions
         function toggleDropdown() {
-            console.log('Dropdown clicked');
             const submenu = document.getElementById('analyticsSubmenu');
             const arrow = document.getElementById('dropdownArrow');
-            
             if (submenu && arrow) {
-                if (submenu.classList.contains('open')) {
-                    submenu.classList.remove('open');
-                    arrow.classList.remove('rotated');
-                    console.log('Dropdown closed');
-                } else {
-                    submenu.classList.add('open');
-                    arrow.classList.add('rotated');
-                    console.log('Dropdown opened');
-                }
+                submenu.classList.toggle('open');
+                arrow.classList.toggle('rotated');
             }
         }
 
         function selectSearchType(type, element) {
-            console.log('Search type selected:', type);
-            
-            // Update active states
             const allSubmenuItems = document.querySelectorAll('.submenu-item');
             allSubmenuItems.forEach(item => item.classList.remove('active'));
             element.classList.add('active');
-            
-            // Update current search type
             currentSearchType = type;
-            
-            // Update search form
+
             const searchInput = document.getElementById('searchInput');
             const searchBtnText = document.getElementById('searchBtnText');
-            
-            console.log('Updating UI for type:', type);
-            console.log('Search input element:', searchInput);
-            console.log('Search button text element:', searchBtnText);
-            
+
             if (type === 'zipcode') {
-                if (searchInput) {
-                    searchInput.placeholder = 'Enter ZIP code (e.g., 22207)';
-                    console.log('Updated placeholder to ZIP code');
-                }
-                if (searchBtnText) {
-                    searchBtnText.textContent = 'SEARCH BY ZIP CODE';
-                    console.log('Updated button text to ZIP code');
-                }
+                searchInput.placeholder = 'Enter ZIP code (e.g., 22207)';
+                searchBtnText.textContent = 'SEARCH BY ZIP CODE';
             } else {
-                if (searchInput) {
-                    searchInput.placeholder = 'Enter full address (e.g., 123 Main St, Arlington, VA)';
-                    console.log('Updated placeholder to address');
-                }
-                if (searchBtnText) {
-                    searchBtnText.textContent = 'SEARCH BY ADDRESS';
-                    console.log('Updated button text to address');
-                }
+                searchInput.placeholder = 'Enter full address (e.g., 123 Main St, Arlington, VA)';
+                searchBtnText.textContent = 'SEARCH BY ADDRESS';
             }
-            
-            // Clear previous search and hide dashboard
-            if (searchInput) {
-                searchInput.value = '';
-            }
+
+            searchInput.value = '';
             hideDashboard();
             hideError();
-            
-            console.log('Search type update complete');
         }
 
         function selectSection(section) {
             console.log('Section selected:', section);
-            // Handle other navigation sections
         }
 
-        // DOM ready initialization
+        // DOM Ready
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
             const searchForm = document.getElementById('searchForm');
-            
-            // Mobile menu toggle
+
             if (menuToggle) {
-                menuToggle.addEventListener('click', function() {
+                menuToggle.addEventListener('click', () => {
                     sidebar.classList.toggle('open');
                 });
             }
 
-            // Initialize dropdown as open with rotated arrow
             const dropdownArrow = document.getElementById('dropdownArrow');
             if (dropdownArrow) {
                 dropdownArrow.classList.add('rotated');
             }
-            
-            // Search form submission
+
             if (searchForm) {
                 searchForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const searchValue = document.getElementById('searchInput').value.trim();
-                    
-                    console.log('Form submitted with search type:', currentSearchType, 'value:', searchValue);
-                    
                     if (!searchValue) {
                         showError('Please enter a valid search term');
                         return;
                     }
-
                     if (currentSearchType === 'zipcode') {
                         await fetchMarketData(searchValue);
                     } else {
@@ -869,34 +715,22 @@
                     }
                 });
             }
-            
-            console.log('Navigation initialized');
         });
 
         async function fetchMarketData(zipcode) {
             showLoading(true);
             hideError();
             hideDashboard();
-
             try {
                 const response = await fetch(`/api/market-data?zipcode=${zipcode}`);
                 const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to fetch data');
-                }
-
-                console.log('Market data received:', data);
-
+                if (!response.ok) throw new Error(data.error || 'Failed to fetch data');
                 if (!data.details && !data.rental && !data.grade) {
                     showNoData();
                     return;
                 }
-
                 displayDashboard(data, zipcode);
-                
             } catch (error) {
-                console.error('Error:', error);
                 showError(error.message || 'Failed to fetch market data');
             } finally {
                 showLoading(false);
@@ -907,31 +741,16 @@
             showLoading(true);
             hideError();
             hideDashboard();
-
-            try {
-                // TODO: Implement address-based API call
-                // const response = await fetch(`/api/market-data-by-address?address=${encodeURIComponent(address)}`);
-                
-                // For now, show a placeholder
-                showError('Address search will be implemented soon. Please use ZIP code search for now.');
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showError(error.message || 'Failed to fetch market data');
-            } finally {
-                showLoading(false);
-            }
+            showError('Address search will be implemented soon. Please use ZIP code search for now.');
+            showLoading(false);
         }
 
         function displayDashboard(data, searchTerm) {
             const dashboard = document.getElementById('dashboard');
             const statsGrid = document.getElementById('statsGrid');
             loadGoogleMapsAndInitialize(searchTerm);
-            
-            // Clear previous content
             statsGrid.innerHTML = '';
 
-            // Market Grade
             if (data.grade && data.grade.result) {
                 const gradeCard = createStatCard(
                     data.grade.result.market_grade || 'N/A',
@@ -943,10 +762,8 @@
                 statsGrid.appendChild(gradeCard);
             }
 
-            // Property Details
             if (data.details && data.details.result && data.details.result.single_family) {
                 const sf = data.details.result.single_family;
-                
                 if (sf.price_median) {
                     statsGrid.appendChild(createStatCard(
                         formatCurrency(sf.price_median),
@@ -955,7 +772,6 @@
                         '#1e3a5f'
                     ));
                 }
-
                 if (sf.inventory_total) {
                     statsGrid.appendChild(createStatCard(
                         Math.round(sf.inventory_total),
@@ -964,7 +780,6 @@
                         '#2c5282'
                     ));
                 }
-
                 if (sf.days_on_market_median) {
                     statsGrid.appendChild(createStatCard(
                         Math.round(sf.days_on_market_median),
@@ -973,7 +788,6 @@
                         '#28a745'
                     ));
                 }
-
                 if (sf.months_of_inventory_median) {
                     statsGrid.appendChild(createStatCard(
                         sf.months_of_inventory_median.toFixed(1),
@@ -982,7 +796,6 @@
                         '#6f42c1'
                     ));
                 }
-
                 if (sf.estimated_sales_total) {
                     statsGrid.appendChild(createStatCard(
                         Math.round(sf.estimated_sales_total),
@@ -993,7 +806,6 @@
                 }
             }
 
-            // Rental Yield
             if (data.rental && data.rental.result) {
                 const rental = data.rental.result;
                 if (rental.gross_yield_median) {
@@ -1006,23 +818,19 @@
                 }
             }
 
-            // Create charts
             createCharts(data);
-            
             dashboard.style.display = 'block';
         }
 
         function createStatCard(value, label, icon, color, extraClass = '') {
             const card = document.createElement('div');
             card.className = 'stat-card';
-            
             let displayValue = value;
             if (extraClass && label === 'Market Grade') {
                 displayValue = `<span class="stat-value">${value}</span><div class="grade-badge ${extraClass}">${value}</div>`;
             } else {
                 displayValue = `<span class="stat-value">${value}</span>`;
             }
-            
             card.innerHTML = `
                 <div class="stat-icon" style="background: ${color}">
                     <i class="${icon}"></i>
@@ -1030,7 +838,6 @@
                 ${displayValue}
                 <div class="stat-label">${label}</div>
             `;
-            
             return card;
         }
 
@@ -1046,38 +853,21 @@
         }
 
         function createCharts(data) {
-            // Destroy existing charts
-            if (returnsChart) {
-                returnsChart.destroy();
-                returnsChart = null;
-            }
-            if (metricsChart) {
-                metricsChart.destroy();
-                metricsChart = null;
-            }
-            if (trendsChart) {
-                trendsChart.destroy();
-                trendsChart = null;
-            }
+            if (returnsChart) returnsChart.destroy();
+            if (metricsChart) metricsChart.destroy();
+            if (trendsChart) trendsChart.destroy();
 
-            // Historical Returns Chart
             if (data.details && data.details.result && data.details.result.historical) {
-                const historical = data.details.result.historical;
-                createReturnsChart(historical);
+                createReturnsChart(data.details.result.historical);
             }
-
-            // Market Metrics Chart
             if (data.details && data.details.result && data.details.result.single_family) {
                 createMetricsChart(data.details.result.single_family, data.rental);
             }
-
-            // Trends Chart (placeholder with sample data)
             createTrendsChart();
         }
 
         function createReturnsChart(historical) {
             const ctx = document.getElementById('returnsChart').getContext('2d');
-            
             const chartData = {
                 labels: ['1 Year', '5 Years', '10 Years', '20 Years'],
                 datasets: [{
@@ -1097,51 +887,28 @@
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
                     pointRadius: 8,
-                    pointHoverRadius: 12,
-                    pointHoverBackgroundColor: '#28a745',
-                    pointHoverBorderColor: '#fff',
-                    pointHoverBorderWidth: 3
+                    pointHoverRadius: 12
                 }]
             };
-
             returnsChart = new Chart(ctx, {
                 type: 'line',
                 data: chartData,
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    },
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
-                            enabled: true,
                             backgroundColor: 'rgba(30, 58, 95, 0.95)',
                             titleColor: '#fff',
                             bodyColor: '#fff',
                             borderColor: '#32d74b',
                             borderWidth: 2,
                             cornerRadius: 8,
-                            displayColors: false,
-                            titleFont: {
-                                size: 14,
-                                weight: 'bold'
-                            },
-                            bodyFont: {
-                                size: 13
-                            },
                             padding: 12,
                             callbacks: {
-                                title: function(context) {
-                                    return context[0].label;
-                                },
-                                label: function(context) {
-                                    return `Returns: ${context.parsed.y.toFixed(1)}%`;
-                                }
+                                title: context => context[0].label,
+                                label: context => `Returns: ${context.parsed.y.toFixed(1)}%`
                             }
                         }
                     },
@@ -1149,60 +916,22 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                },
+                                callback: value => value + '%',
                                 color: '#6c757d'
                             },
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
+                            grid: { color: 'rgba(0,0,0,0.05)' }
                         },
                         x: {
-                            ticks: {
-                                color: '#6c757d'
-                            },
-                            grid: {
-                                display: false
-                            }
+                            ticks: { color: '#6c757d' },
+                            grid: { display: false }
                         }
                     }
                 }
             });
-
-            // Add pulsing animation
-            let isPulsing = true;
-            setTimeout(() => {
-                function animatePoints() {
-                    if (returnsChart && returnsChart.data && returnsChart.data.datasets[0] && isPulsing) {
-                        const time = Date.now() * 0.003;
-                        const dataset = returnsChart.data.datasets[0];
-                        
-                        dataset.pointRadius = dataset.data.map((_, index) => {
-                            const baseRadius = 8;
-                            const pulse = Math.sin(time + index * 1.5) * 2;
-                            return Math.max(6, baseRadius + pulse);
-                        });
-                        
-                        returnsChart.update('none');
-                    }
-                    requestAnimationFrame(animatePoints);
-                }
-                animatePoints();
-
-                ctx.canvas.addEventListener('mousemove', function() {
-                    isPulsing = false;
-                });
-
-                ctx.canvas.addEventListener('mouseleave', function() {
-                    isPulsing = true;
-                });
-            }, 500);
         }
 
         function createMetricsChart(singleFamily, rental) {
             const ctx = document.getElementById('metricsChart').getContext('2d');
-            
             const labels = [];
             const values = [];
             const colors = [];
@@ -1212,19 +941,16 @@
                 values.push(singleFamily.days_on_market_median);
                 colors.push('#1e3a5f');
             }
-
             if (singleFamily.months_of_inventory_median) {
                 labels.push('Months of Inventory');
                 values.push(singleFamily.months_of_inventory_median);
                 colors.push('#32d74b');
             }
-
-            if (rental && rental.result && rental.result.gross_yield_median) {
+            if (rental?.result?.gross_yield_median) {
                 labels.push('Rental Yield (%)');
                 values.push(rental.result.gross_yield_median * 100);
                 colors.push('#2c5282');
             }
-
             if (singleFamily.estimated_sales_total) {
                 labels.push('Estimated Sales');
                 values.push(singleFamily.estimated_sales_total);
@@ -1233,15 +959,7 @@
 
             metricsChart = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: colors,
-                        borderColor: '#fff',
-                        borderWidth: 3
-                    }]
-                },
+                data: { labels, datasets: [{ data: values, backgroundColor: colors, borderColor: '#fff', borderWidth: 3 }] },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -1252,10 +970,7 @@
                                 padding: 15,
                                 usePointStyle: true,
                                 color: '#6c757d',
-                                font: {
-                                    size: 12,
-                                    weight: 500
-                                }
+                                font: { size: 12, weight: 500 }
                             }
                         }
                     }
@@ -1265,8 +980,6 @@
 
         function createTrendsChart() {
             const ctx = document.getElementById('trendsChart').getContext('2d');
-            
-            // Sample data for price trends
             const trendData = {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                 datasets: [{
@@ -1287,30 +1000,19 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
-                        }
+                        legend: { display: false }
                     },
                     scales: {
                         y: {
                             ticks: {
-                                callback: function(value) {
-                                    return '
-                 + (value / 1000) + 'K';
-                                },
+                                callback: (value) => `$${(value / 1000).toFixed(1)}K`,
                                 color: '#6c757d'
                             },
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
+                            grid: { color: 'rgba(0,0,0,0.05)' }
                         },
                         x: {
-                            ticks: {
-                                color: '#6c757d'
-                            },
-                            grid: {
-                                display: false
-                            }
+                            ticks: { color: '#6c757d' },
+                            grid: { display: false }
                         }
                     }
                 }
@@ -1327,37 +1029,27 @@
         }
 
         function showLoading(show) {
-            const loading = document.getElementById('loading');
-            const searchBtn = document.getElementById('searchBtn');
-            if (loading) loading.style.display = show ? 'block' : 'none';
-            if (searchBtn) searchBtn.disabled = show;
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('searchBtn').disabled = show;
         }
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
-            if (errorDiv) {
-                errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
-            }
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
         }
 
         function hideError() {
-            const errorDiv = document.getElementById('errorMessage');
-            if (errorDiv) {
-                errorDiv.style.display = 'none';
-            }
+            document.getElementById('errorMessage').style.display = 'none';
         }
 
         function hideDashboard() {
-            const dashboard = document.getElementById('dashboard');
-            const noData = document.getElementById('noData');
-            if (dashboard) dashboard.style.display = 'none';
-            if (noData) noData.style.display = 'none';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('noData').style.display = 'none';
         }
 
         function showNoData() {
-            const noData = document.getElementById('noData');
-            if (noData) noData.style.display = 'block';
+            document.getElementById('noData').style.display = 'block';
         }
 
         function loadGoogleMapsAndInitialize(searchTerm) {
@@ -1399,11 +1091,9 @@
             script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry&callback=initializeGoogleMapCallback`;
             script.async = true;
             script.defer = true;
-            
             window.currentSearchTerm = searchTerm;
-            
+
             script.onerror = function() {
-                console.error('Failed to load Google Maps API');
                 mapContainer.innerHTML = `
                     <div style="
                         display: flex; 
@@ -1425,7 +1115,7 @@
                     </div>
                 `;
             };
-            
+
             document.head.appendChild(script);
         }
 
@@ -1434,145 +1124,91 @@
         };
 
         function initializeGoogleMap(searchTerm) {
-            console.log('Initializing Google Map for:', searchTerm);
-            
             const mapContainer = document.getElementById('map');
-            
-            try {
-                map = new google.maps.Map(mapContainer, {
-                    zoom: 4,
-                    center: { lat: 39.8283, lng: -98.5795 },
-                    mapTypeId: google.maps.MapTypeId.ROADMAP,
-                    styles: [
-                        {
-                            featureType: 'water',
-                            elementType: 'geometry',
-                            stylers: [{ color: '#e3f2fd' }]
-                        },
-                        {
-                            featureType: 'landscape',
-                            elementType: 'geometry',
-                            stylers: [{ color: '#f5f5f5' }]
+            map = new google.maps.Map(mapContainer, {
+                zoom: 4,
+                center: { lat: 39.8283, lng: -98.5795 },
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                styles: [
+                    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#e3f2fd' }] },
+                    { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#f5f5f5' }] }
+                ]
+            });
+
+            geocoder = new google.maps.Geocoder();
+            geocoder.geocode({
+                address: searchTerm + ', USA',
+                componentRestrictions: { country: 'US' }
+            }, function(results, status) {
+                if (status === google.maps.GeocoderStatus.OK && results[0]) {
+                    const location = results[0].geometry.location;
+                    const address = results[0].formatted_address;
+                    map.setCenter(location);
+                    map.setZoom(13);
+
+                    if (currentZipMarker) currentZipMarker.setMap(null);
+                    if (currentZipCircle) currentZipCircle.setMap(null);
+
+                    currentZipCircle = new google.maps.Circle({
+                        strokeColor: '#1e3a5f',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 3,
+                        fillColor: '#32d74b',
+                        fillOpacity: 0.25,
+                        map: map,
+                        center: location,
+                        radius: 2000
+                    });
+
+                    currentZipMarker = new google.maps.Marker({
+                        position: location,
+                        map: map,
+                        title: `Location: ${searchTerm}`,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 12,
+                            fillColor: '#32d74b',
+                            fillOpacity: 1,
+                            strokeColor: '#fff',
+                            strokeWeight: 3
                         }
-                    ]
-                });
+                    });
 
-                geocoder = new google.maps.Geocoder();
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div style="font-family: inherit; text-align: center; padding: 5px;">
+                                <h4 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 16px; font-weight: 600;">${searchTerm}</h4>
+                                <p style="margin: 0; color: #666; font-size: 13px;">${address.replace(', USA', '')}</p>
+                            </div>
+                        `
+                    });
 
-                geocoder.geocode(
-                    { 
-                        address: searchTerm + ', USA',
-                        componentRestrictions: { country: 'US' }
-                    },
-                    function(results, status) {
-                        if (status === google.maps.GeocoderStatus.OK && results[0]) {
-                            const location = results[0].geometry.location;
-                            const address = results[0].formatted_address;
-                            
-                            console.log('Geocoded successfully:', location.toString(), address);
-                            
-                            map.setCenter(location);
-                            map.setZoom(13);
-
-                            if (currentZipMarker) {
-                                currentZipMarker.setMap(null);
-                            }
-                            if (currentZipCircle) {
-                                currentZipCircle.setMap(null);
-                            }
-
-                            currentZipCircle = new google.maps.Circle({
-                                strokeColor: '#1e3a5f',
-                                strokeOpacity: 0.8,
-                                strokeWeight: 3,
-                                fillColor: '#32d74b',
-                                fillOpacity: 0.25,
-                                map: map,
-                                center: location,
-                                radius: 2000
-                            });
-
-                            currentZipMarker = new google.maps.Marker({
-                                position: location,
-                                map: map,
-                                title: `Location: ${searchTerm}`,
-                                icon: {
-                                    path: google.maps.SymbolPath.CIRCLE,
-                                    scale: 12,
-                                    fillColor: '#32d74b',
-                                    fillOpacity: 1,
-                                    strokeColor: '#fff',
-                                    strokeWeight: 3
-                                }
-                            });
-
-                            const infoWindow = new google.maps.InfoWindow({
-                                content: `
-                                    <div style="font-family: inherit; text-align: center; padding: 5px;">
-                                        <h4 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 16px; font-weight: 600;">${searchTerm}</h4>
-                                        <p style="margin: 0; color: #666; font-size: 13px;">${address.replace(', USA', '')}</p>
-                                    </div>
-                                `
-                            });
-
-                            currentZipMarker.addListener('click', function() {
-                                infoWindow.open(map, currentZipMarker);
-                            });
-
-                            currentZipCircle.addListener('click', function() {
-                                infoWindow.open(map, currentZipMarker);
-                            });
-
-                        } else {
-                            console.error('Geocoding failed:', status);
-                            mapContainer.innerHTML = `
-                                <div style="
-                                    display: flex; 
-                                    align-items: center; 
-                                    justify-content: center; 
-                                    height: 100%; 
-                                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
-                                    border-radius: 10px;
-                                    text-align: center;
-                                    color: #1e3a5f;
-                                    font-family: inherit;
-                                    border: 2px dashed #32d74b;
-                                ">
-                                    <div>
-                                        <div style="font-size: 64px; margin-bottom: 15px;">📍</div>
-                                        <h3 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 18px; font-weight: 600;">${searchTerm}</h3>
-                                        <p style="margin: 0; color: #6c757d; font-size: 14px;">Location not found</p>
-                                        <p style="margin: 8px 0 0 0; color: #32d74b; font-size: 12px; font-weight: 500;">Data processed ✓</p>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    }
-                );
-
-            } catch (error) {
-                console.error('Error initializing Google Map:', error);
-                mapContainer.innerHTML = `
-                    <div style="
-                        display: flex; 
-                        align-items: center; 
-                        justify-content: center; 
-                        height: 100%; 
-                        background: #f8f9fa; 
-                        border-radius: 10px;
-                        text-align: center;
-                        color: #dc3545;
-                        font-size: 14px;
-                        border: 1px solid #dc3545;
-                    ">
-                        <div>
-                            <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
-                            <div style="font-weight: 600;">Map Error</div>
-                            <div style="font-size: 12px; margin-top: 5px;">Failed to initialize</div>
+                    currentZipMarker.addListener('click', () => infoWindow.open(map, currentZipMarker));
+                    currentZipCircle.addListener('click', () => infoWindow.open(map, currentZipMarker));
+                } else {
+                    mapContainer.innerHTML = `
+                        <div style="
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center; 
+                            height: 100%; 
+                            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+                            border-radius: 10px;
+                            text-align: center;
+                            color: #1e3a5f;
+                            font-family: inherit;
+                            border: 2px dashed #32d74b;
+                        ">
+                            <div>
+                                <div style="font-size: 64px; margin-bottom: 15px;">📍</div>
+                                <h3 style="margin: 0 0 8px 0; color: #1e3a5f; font-size: 18px; font-weight: 600;">${searchTerm}</h3>
+                                <p style="margin: 0; color: #6c757d; font-size: 14px;">Location not found</p>
+                                <p style="margin: 8px 0 0 0; color: #32d74b; font-size: 12px; font-weight: 500;">Data processed ✓</p>
+                            </div>
                         </div>
-                    </div>
-                `;
-            }
+                    `;
+                }
+            });
         }
     </script>
 </body>
