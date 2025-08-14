@@ -753,25 +753,26 @@
         let geocoder = null;
         let currentZipMarker = null;
         let currentZipCircle = null;
+        let currentSearchType = 'zipcode';
 
         const GOOGLE_MAPS_API_KEY = 'AIzaSyBHGYla18wlILgHfqWYQm1-MfwkarMUbvA';
 
-        let currentSearchType = 'zipcode';
-
-        // Simple global functions for navigation
+        // Global functions for navigation - defined at global scope
         function toggleDropdown() {
             console.log('Dropdown clicked');
             const submenu = document.getElementById('analyticsSubmenu');
             const arrow = document.getElementById('dropdownArrow');
             
-            if (submenu.classList.contains('open')) {
-                submenu.classList.remove('open');
-                arrow.classList.remove('rotated');
-                console.log('Dropdown closed');
-            } else {
-                submenu.classList.add('open');
-                arrow.classList.add('rotated');
-                console.log('Dropdown opened');
+            if (submenu && arrow) {
+                if (submenu.classList.contains('open')) {
+                    submenu.classList.remove('open');
+                    arrow.classList.remove('rotated');
+                    console.log('Dropdown closed');
+                } else {
+                    submenu.classList.add('open');
+                    arrow.classList.add('rotated');
+                    console.log('Dropdown opened');
+                }
             }
         }
 
@@ -829,7 +830,7 @@
             // Handle other navigation sections
         }
 
-        // Search form submission - move this after DOM is loaded
+        // DOM ready initialization
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
