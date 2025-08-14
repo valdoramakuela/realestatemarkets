@@ -78,12 +78,20 @@
             text-decoration: none;
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
         }
 
-        .nav-item:hover, .nav-item.active {
+        .nav-item:hover {
             background: rgba(50, 215, 75, 0.15);
             color: #32d74b;
-            border-right: 3px solid #32d74b;
+        }
+
+        .nav-item.has-submenu {
+            border-right: none;
+        }
+
+        .nav-item.has-submenu:hover {
+            border-right: none;
         }
 
         .nav-item i {
@@ -95,34 +103,54 @@
         .submenu {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease;
-            background: rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            background: rgba(0,0,0,0.2);
+            border-radius: 0 0 8px 8px;
+            margin: 0 10px;
         }
 
         .submenu.open {
             max-height: 200px;
+            padding: 5px 0;
         }
 
         .submenu-item {
             display: flex;
             align-items: center;
-            padding: 10px 20px 10px 50px;
+            padding: 10px 20px 10px 40px;
             color: rgba(255,255,255,0.7);
             text-decoration: none;
             transition: all 0.3s ease;
             cursor: pointer;
             font-size: 14px;
+            border-left: 3px solid transparent;
         }
 
-        .submenu-item:hover, .submenu-item.active {
+        .submenu-item:hover {
             background: rgba(50, 215, 75, 0.1);
             color: #32d74b;
+        }
+
+        .submenu-item.active {
+            background: rgba(50, 215, 75, 0.15);
+            color: #32d74b;
+            border-left-color: #32d74b;
         }
 
         .submenu-item i {
             width: 16px;
             margin-right: 12px;
             font-size: 14px;
+        }
+
+        .dropdown-arrow {
+            margin-left: auto;
+            transition: transform 0.3s ease;
+            font-size: 12px;
+        }
+
+        .dropdown-arrow.rotated {
+            transform: rotate(180deg);
         }
 
         /* Main Content */
@@ -575,33 +603,33 @@
         <nav class="nav-menu">
             <div class="nav-section">
                 <div class="nav-section-title">Analytics</div>
-                <div class="nav-item" data-section="analytics">
+                <div class="nav-item has-submenu" onclick="toggleDropdown()">
                     <i class="fas fa-chart-bar"></i>
                     <span>Market Analytics</span>
-                    <i class="fas fa-chevron-down" style="margin-left: auto; transition: transform 0.3s ease;"></i>
+                    <i class="fas fa-chevron-down dropdown-arrow" id="dropdownArrow"></i>
                 </div>
-                <div class="submenu" id="analyticsSubmenu">
-                    <a href="#" class="submenu-item active" data-search-type="zipcode">
+                <div class="submenu open" id="analyticsSubmenu">
+                    <div class="submenu-item active" onclick="selectSearchType('zipcode', this)">
                         <i class="fas fa-map-pin"></i>
                         Search by ZIP Code
-                    </a>
-                    <a href="#" class="submenu-item" data-search-type="address">
+                    </div>
+                    <div class="submenu-item" onclick="selectSearchType('address', this)">
                         <i class="fas fa-home"></i>
                         Search by Address
-                    </a>
+                    </div>
                 </div>
             </div>
             
             <div class="nav-section">
                 <div class="nav-section-title">Reports</div>
-                <a href="#" class="nav-item" data-section="trends">
+                <div class="nav-item" onclick="selectSection('trends')">
                     <i class="fas fa-trending-up"></i>
                     Market Trends
-                </a>
-                <a href="#" class="nav-item" data-section="comparison">
+                </div>
+                <div class="nav-item" onclick="selectSection('comparison')">
                     <i class="fas fa-balance-scale"></i>
                     Area Comparison
-                </a>
+                </div>
             </div>
         </nav>
     </div>
@@ -728,71 +756,86 @@
 
         const GOOGLE_MAPS_API_KEY = 'AIzaSyBHGYla18wlILgHfqWYQm1-MfwkarMUbvA';
 
+        let currentSearchType = 'zipcode';
+
+        // Simple global functions for navigation
+        function toggleDropdown() {
+            console.log('Dropdown clicked');
+            const submenu = document.getElementById('analyticsSubmenu');
+            const arrow = document.getElementById('dropdownArrow');
+            
+            if (submenu.classList.contains('open')) {
+                submenu.classList.remove('open');
+                arrow.classList.remove('rotated');
+                console.log('Dropdown closed');
+            } else {
+                submenu.classList.add('open');
+                arrow.classList.add('rotated');
+                console.log('Dropdown opened');
+            }
+        }
+
+        function selectSearchType(type, element) {
+            console.log('Search type selected:', type);
+            
+            // Update active states
+            const allSubmenuItems = document.querySelectorAll('.submenu-item');
+            allSubmenuItems.forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            
+            // Update current search type
+            currentSearchType = type;
+            
+            // Update search form
+            const searchInput = document.getElementById('searchInput');
+            const searchBtnText = document.getElementById('searchBtnText');
+            
+            if (type === 'zipcode') {
+                searchInput.placeholder = 'Enter ZIP code (e.g., 22207)';
+                searchBtnText.textContent = 'Search by ZIP Code';
+            } else {
+                searchInput.placeholder = 'Enter full address (e.g., 123 Main St, Arlington, VA)';
+                searchBtnText.textContent = 'Search by Address';
+            }
+            
+            // Clear previous search and hide dashboard
+            hideDashboard();
+            searchInput.value = '';
+            hideError();
+        }
+
+        function selectSection(section) {
+            console.log('Section selected:', section);
+            // Handle other navigation sections
+        }
+
         // Navigation functionality
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
-            const analyticsItem = document.querySelector('[data-section="analytics"]');
-            const analyticsSubmenu = document.getElementById('analyticsSubmenu');
-            const submenuItems = document.querySelectorAll('.submenu-item');
-            const searchInput = document.getElementById('searchInput');
-            const searchBtnText = document.getElementById('searchBtnText');
             
-            let currentSearchType = 'zipcode';
-
             // Mobile menu toggle
-            menuToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('open');
-            });
-
-            // Analytics dropdown toggle
-            analyticsItem.addEventListener('click', function(e) {
-                e.preventDefault();
-                analyticsSubmenu.classList.toggle('open');
-                const chevron = this.querySelector('.fa-chevron-down');
-                chevron.style.transform = analyticsSubmenu.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
-            });
-
-            // Submenu item selection
-            submenuItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Update active states
-                    submenuItems.forEach(sub => sub.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Update search type
-                    currentSearchType = this.dataset.searchType;
-                    
-                    // Update UI based on selection
-                    if (currentSearchType === 'zipcode') {
-                        searchInput.placeholder = 'Enter ZIP code (e.g., 22207)';
-                        searchBtnText.textContent = 'Search by ZIP Code';
-                    } else {
-                        searchInput.placeholder = 'Enter full address (e.g., 123 Main St, Arlington, VA)';
-                        searchBtnText.textContent = 'Search by Address';
-                    }
-                    
-                    // Clear previous search and hide dashboard
-                    hideDashboard();
-                    searchInput.value = '';
-                    
-                    console.log('Selected search type:', currentSearchType);
+            if (menuToggle) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('open');
                 });
-            });
+            }
 
-            // Initialize with ZIP code search
-            analyticsSubmenu.classList.add('open');
-            const chevron = analyticsItem.querySelector('.fa-chevron-down');
-            chevron.style.transform = 'rotate(180deg)';
+            // Initialize dropdown as open with rotated arrow
+            const dropdownArrow = document.getElementById('dropdownArrow');
+            if (dropdownArrow) {
+                dropdownArrow.classList.add('rotated');
+            }
+            
+            console.log('Navigation initialized');
         });
 
         // Search form submission
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const searchValue = document.getElementById('searchInput').value.trim();
-            const currentSearchType = document.querySelector('.submenu-item.active').dataset.searchType;
+            
+            console.log('Form submitted with search type:', currentSearchType, 'value:', searchValue);
             
             if (!searchValue) {
                 showError('Please enter a valid search term');
