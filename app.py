@@ -3,17 +3,41 @@ import requests
 import os
 from concurrent.futures import ThreadPoolExecutor
 import base64
+from datetime import datetime, timedelta
+import re
 
 app = Flask(__name__)
 
 USERNAME = 'dhenry@nomadicrealestate.com'
 PASSWORD = 'qasnex-4joSxu-qigbet'
 
-def make_api_request(endpoint, zipcode):
+def format_address_to_slug(address):
+    """Convert address to API slug format"""
+    # Remove extra spaces and normalize
+    address = re.sub(r'\s+', ' ', address.strip())
+    
+    # Replace spaces with hyphens
+    slug = address.replace(' ', '-')
+    
+    # Remove special characters except hyphens and alphanumeric
+    slug = re.sub(r'[^a-zA-Z0-9\-]', '', slug)
+    
+    return slug
+
+def make_api_request(endpoint, zipcode=None, slug=None, start_date=None, end_date=None):
     """Make API request using Basic Auth (username:password)"""
     try:
         url = f"https://api.housecanary.com/v2{endpoint}"
-        params = {'zipcode': zipcode}
+        params = {}
+        
+        if zipcode:
+            params['zipcode'] = zipcode
+        if slug:
+            params['slug'] = slug
+        if start_date:
+            params['start'] = start_date
+        if end_date:
+            params['end'] = end_date
 
         # Encode username:password in Base64
         auth_string = f"{USERNAME}:{PASSWORD}"
@@ -22,9 +46,9 @@ def make_api_request(endpoint, zipcode):
         headers = {
             'Accept': 'application/json',
             'Authorization': f'Basic {encoded_auth}'
-                    }
+        }
 
-        print(f"Requesting: {url}?zipcode={zipcode}")
+        print(f"Requesting: {url} with params: {params}")
         response = requests.get(url, headers=headers, params=params, timeout=10)
 
         if response.status_code == 200:
@@ -55,7 +79,7 @@ def fetch_market_data(zipcode):
     # Use ThreadPoolExecutor for concurrent requests
     with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {
-            key: executor.submit(make_api_request, endpoint, zipcode)
+            key: executor.submit(make_api_request, endpoint, zipcode=zipcode)
             for key, endpoint in endpoints.items()
         }
         
@@ -90,6 +114,78 @@ def fetch_market_data(zipcode):
     print(f"Final market_data: {market_data}")
     return market_data
 
+def fetch_address_market_data(address, start_date=None, end_date=None):
+    """Fetch market data from address-based endpoints"""
+    slug = format_address_to_slug(address)
+    print(f"Formatted address '{address}' to slug: '{slug}'")
+    
+    # Set default date range if not provided (last 5 years)
+    if not end_date:
+        end_date = datetime.now().strftime('%Y-%m-%d')
+    if not start_date:
+        start_date = (datetime.now() - timedelta(days=5*365)).strftime('%Y-%m-%d')
+    
+    market_data = {
+        'rpi_forecast': None,
+        'rpi_historical': None,
+        'rpi_ts_forecast': None,
+        'rpi_ts_historical': None
+    }
+    
+    # Define API endpoints for address-based searches
+    endpoints = {
+        'rpi_forecast': '/property/zip_rpi_forecast',
+        'rpi_historical': '/property/zip_rpi_historical',
+        'rpi_ts_forecast': '/property/zip_rpi_ts_forecast',
+        'rpi_ts_historical': '/property/zip_rpi_ts_historical'
+    }
+    
+    # Use ThreadPoolExecutor for concurrent requests
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {}
+        
+        for key, endpoint in endpoints.items():
+            if key.startswith('rpi_ts_'):
+                # Time series endpoints need date range
+                futures[key] = executor.submit(
+                    make_api_request, endpoint, slug=slug, 
+                    start_date=start_date, end_date=end_date
+                )
+            else:
+                # Regular endpoints don't need date range
+                futures[key] = executor.submit(make_api_request, endpoint, slug=slug)
+        
+        for key, future in futures.items():
+            try:
+                response = future.result()
+                print(f"Processing {key} response: {response}")
+                
+                if response and isinstance(response, list) and len(response) > 0:
+                    # Response is an array, get the first item
+                    data_item = response[0]
+                    endpoint_key = f"property{endpoints[key].replace('property', '')}"
+                    
+                    if endpoint_key in data_item:
+                        api_response = data_item[endpoint_key]
+                        if api_response.get('api_code') == 0:
+                            market_data[key] = api_response.get('result')
+                            print(f"Successfully extracted {key} data")
+                        else:
+                            print(f"API error for {key}: {api_response.get('api_code_description')}")
+                            market_data[key] = None
+                    else:
+                        print(f"Key {endpoint_key} not found in response for {key}")
+                        market_data[key] = None
+                else:
+                    print(f"Invalid response format for {key}: {response}")
+                    market_data[key] = None
+            except Exception as e:
+                print(f"Error getting {key} data: {str(e)}")
+                market_data[key] = None
+    
+    print(f"Final address market_data: {market_data}")
+    return market_data
+
 @app.route('/')
 def index():
     """Render the main dashboard page"""
@@ -118,7 +214,7 @@ def get_market_data():
         headers = {
             'Accept': 'application/json',
             'Authorization': f'Basic {encoded_auth}'
-                    }
+        }
         
         details_response = requests.get(details_url, headers=headers)
         rental_response = requests.get(rental_url, headers=headers)
@@ -143,7 +239,7 @@ def get_market_data():
         # Process details data
         if details_data and isinstance(details_data, list) and len(details_data) > 0:
             details_item = details_data[0]
-            if 'zip/details' in details_item:  # Changed from 'zip//details' to 'zip/details'
+            if 'zip/details' in details_item:
                 market_data['details'] = details_item['zip/details']
                 print(f"Found details data: {market_data['details']}")
             else:
@@ -152,7 +248,7 @@ def get_market_data():
         # Process rental data
         if rental_data and isinstance(rental_data, list) and len(rental_data) > 0:
             rental_item = rental_data[0]
-            if 'zip/hcri' in rental_item:  # Changed from 'zip//hcri' to 'zip/hcri'
+            if 'zip/hcri' in rental_item:
                 market_data['rental'] = rental_item['zip/hcri']
                 print(f"Found rental data: {market_data['rental']}")
             else:
@@ -161,7 +257,7 @@ def get_market_data():
         # Process grade data
         if grade_data and isinstance(grade_data, list) and len(grade_data) > 0:
             grade_item = grade_data[0]
-            if 'zip/market_grade' in grade_item:  # Changed from 'zip//market_grade' to 'zip/market_grade'
+            if 'zip/market_grade' in grade_item:
                 market_data['grade'] = grade_item['zip/market_grade']
                 print(f"Found grade data: {market_data['grade']}")
             else:
@@ -175,8 +271,103 @@ def get_market_data():
         print(f"Error fetching market data: {str(e)}")
         return jsonify({'error': 'Failed to fetch market data'}), 500
 
+@app.route('/api/market-data-by-address')
+def get_market_data_by_address():
+    """Get market data by address using the new RPI endpoints"""
+    address = request.args.get('address')
+    start_date = request.args.get('start')
+    end_date = request.args.get('end')
+    
+    if not address:
+        return jsonify({'error': 'Address is required'}), 400
+    
+    try:
+        market_data = fetch_address_market_data(address, start_date, end_date)
+        return jsonify(market_data)
+        
+    except Exception as e:
+        print(f"Error fetching address market data: {str(e)}")
+        return jsonify({'error': 'Failed to fetch market data'}), 500
+
+@app.route('/api/rpi-forecast')
+def get_rpi_forecast():
+    """Get RPI forecast for a specific address"""
+    address = request.args.get('address')
+    if not address:
+        return jsonify({'error': 'Address is required'}), 400
+    
+    try:
+        slug = format_address_to_slug(address)
+        response = make_api_request('/property/zip_rpi_forecast', slug=slug)
+        return jsonify(response)
+    except Exception as e:
+        print(f"Error fetching RPI forecast: {str(e)}")
+        return jsonify({'error': 'Failed to fetch RPI forecast'}), 500
+
+@app.route('/api/rpi-historical')
+def get_rpi_historical():
+    """Get RPI historical data for a specific address"""
+    address = request.args.get('address')
+    if not address:
+        return jsonify({'error': 'Address is required'}), 400
+    
+    try:
+        slug = format_address_to_slug(address)
+        response = make_api_request('/property/zip_rpi_historical', slug=slug)
+        return jsonify(response)
+    except Exception as e:
+        print(f"Error fetching RPI historical: {str(e)}")
+        return jsonify({'error': 'Failed to fetch RPI historical data'}), 500
+
+@app.route('/api/rpi-ts-forecast')
+def get_rpi_ts_forecast():
+    """Get RPI time series forecast for a specific address"""
+    address = request.args.get('address')
+    start_date = request.args.get('start')
+    end_date = request.args.get('end')
+    
+    if not address:
+        return jsonify({'error': 'Address is required'}), 400
+    
+    # Set default date range if not provided
+    if not end_date:
+        end_date = datetime.now().strftime('%Y-%m-%d')
+    if not start_date:
+        start_date = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+    
+    try:
+        slug = format_address_to_slug(address)
+        response = make_api_request('/property/zip_rpi_ts_forecast', slug=slug, 
+                                  start_date=start_date, end_date=end_date)
+        return jsonify(response)
+    except Exception as e:
+        print(f"Error fetching RPI TS forecast: {str(e)}")
+        return jsonify({'error': 'Failed to fetch RPI time series forecast'}), 500
+
+@app.route('/api/rpi-ts-historical')
+def get_rpi_ts_historical():
+    """Get RPI time series historical data for a specific address"""
+    address = request.args.get('address')
+    start_date = request.args.get('start')
+    end_date = request.args.get('end')
+    
+    if not address:
+        return jsonify({'error': 'Address is required'}), 400
+    
+    # Set default date range if not provided
+    if not end_date:
+        end_date = datetime.now().strftime('%Y-%m-%d')
+    if not start_date:
+        start_date = (datetime.now() - timedelta(days=5*365)).strftime('%Y-%m-%d')
+    
+    try:
+        slug = format_address_to_slug(address)
+        response = make_api_request('/property/zip_rpi_ts_historical', slug=slug, 
+                                  start_date=start_date, end_date=end_date)
+        return jsonify(response)
+    except Exception as e:
+        print(f"Error fetching RPI TS historical: {str(e)}")
+        return jsonify({'error': 'Failed to fetch RPI time series historical data'}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-
-
-
