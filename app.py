@@ -119,11 +119,15 @@ def fetch_address_market_data(address, start_date=None, end_date=None):
     slug = format_address_to_slug(address)
     print(f"Formatted address '{address}' to slug: '{slug}'")
     
-    # Set default date range if not provided (last 5 years)
+    # Set default date range if not provided
     if not end_date:
         end_date = datetime.now().strftime('%Y-%m-%d')
     if not start_date:
         start_date = (datetime.now() - timedelta(days=5*365)).strftime('%Y-%m-%d')
+    
+    # For forecast, we want future dates
+    forecast_start = datetime.now().strftime('%Y-%m-%d')
+    forecast_end = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d')
     
     market_data = {
         'rpi_forecast': None,
@@ -145,8 +149,14 @@ def fetch_address_market_data(address, start_date=None, end_date=None):
         futures = {}
         
         for key, endpoint in endpoints.items():
-            if key.startswith('rpi_ts_'):
-                # Time series endpoints need date range
+            if key == 'rpi_ts_forecast':
+                # Time series forecast needs future date range
+                futures[key] = executor.submit(
+                    make_api_request, endpoint, slug=slug, 
+                    start_date=forecast_start, end_date=forecast_end
+                )
+            elif key == 'rpi_ts_historical':
+                # Time series historical uses provided date range
                 futures[key] = executor.submit(
                     make_api_request, endpoint, slug=slug, 
                     start_date=start_date, end_date=end_date
@@ -278,9 +288,22 @@ def get_market_data_by_address():
     address = request.args.get('address')
     start_date = request.args.get('start')
     end_date = request.args.get('end')
+    period = request.args.get('period')  # New parameter for predefined periods
     
     if not address:
         return jsonify({'error': 'Address is required'}), 400
+    
+    # Handle predefined periods
+    if period:
+        end_date = datetime.now().strftime('%Y-%m-%d')
+        if period == '1Y':
+            start_date = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+        elif period == '5Y':
+            start_date = (datetime.now() - timedelta(days=5*365)).strftime('%Y-%m-%d')
+        elif period == '10Y':
+            start_date = (datetime.now() - timedelta(days=10*365)).strftime('%Y-%m-%d')
+        elif period == 'All':
+            start_date = (datetime.now() - timedelta(days=20*365)).strftime('%Y-%m-%d')  # 20 years max
     
     try:
         market_data = fetch_address_market_data(address, start_date, end_date)
