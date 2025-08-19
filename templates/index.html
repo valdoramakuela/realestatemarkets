@@ -865,60 +865,78 @@
             statsGrid.innerHTML = '';
 
             // Display RPI Forecast data
-            if (data.rpi_forecast && data.rpi_forecast.length > 0) {
-                const forecast = data.rpi_forecast[0]['property/zip_rpi_forecast'];
-                if (forecast && forecast.result) {
-                    const result = forecast.result;
-                    if (result.rpi) {
-                        statsGrid.appendChild(createStatCard(
-                            result.rpi.toFixed(3),
-                            'Current RPI',
-                            'fas fa-chart-line',
-                            '#32d74b'
-                        ));
-                    }
-                    if (result.rpi_forecast_stdev) {
-                        statsGrid.appendChild(createStatCard(
-                            result.rpi_forecast_stdev.toFixed(3),
-                            'Forecast StdDev',
-                            'fas fa-chart-bar',
-                            '#1e3a5f'
-                        ));
-                    }
+            if (data.rpi_forecast && data.rpi_forecast.result) {
+                const result = data.rpi_forecast.result;
+                if (result.returns_12mo_f !== undefined) {
+                    statsGrid.appendChild(createStatCard(
+                        (result.returns_12mo_f * 100).toFixed(2) + '%',
+                        '12-Month Return Forecast',
+                        'fas fa-chart-line',
+                        '#32d74b'
+                    ));
+                }
+                if (result.max_12mo_loss !== undefined) {
+                    statsGrid.appendChild(createStatCard(
+                        (result.max_12mo_loss * 100).toFixed(2) + '%',
+                        'Max 12-Month Loss',
+                        'fas fa-chart-bar',
+                        '#dc3545'
+                    ));
+                }
+                if (result.risk_12mo_loss !== undefined) {
+                    statsGrid.appendChild(createStatCard(
+                        (result.risk_12mo_loss * 100).toFixed(1) + '%',
+                        'Risk of Loss',
+                        'fas fa-exclamation-triangle',
+                        '#ffc107'
+                    ));
                 }
             }
 
             // Display RPI Historical data
-            if (data.rpi_historical && data.rpi_historical.length > 0) {
-                const historical = data.rpi_historical[0]['property/zip_rpi_historical'];
-                if (historical && historical.result) {
-                    const result = historical.result;
-                    if (result.rpi_historical_mean) {
-                        statsGrid.appendChild(createStatCard(
-                            result.rpi_historical_mean.toFixed(3),
-                            'Historical Mean RPI',
-                            'fas fa-history',
-                            '#2c5282'
-                        ));
-                    }
-                    if (result.rpi_historical_stdev) {
-                        statsGrid.appendChild(createStatCard(
-                            result.rpi_historical_stdev.toFixed(3),
-                            'Historical StdDev',
-                            'fas fa-chart-area',
-                            '#28a745'
-                        ));
-                    }
+            if (data.rpi_historical && data.rpi_historical.result) {
+                const result = data.rpi_historical.result;
+                if (result.returns_1_year !== undefined) {
+                    statsGrid.appendChild(createStatCard(
+                        (result.returns_1_year * 100).toFixed(2) + '%',
+                        '1-Year Return',
+                        'fas fa-history',
+                        '#28a745'
+                    ));
+                }
+                if (result.returns_5_years !== undefined) {
+                    statsGrid.appendChild(createStatCard(
+                        (result.returns_5_years * 100).toFixed(2) + '%',
+                        '5-Year Return',
+                        'fas fa-calendar-alt',
+                        '#17a2b8'
+                    ));
+                }
+                if (result.cagr_10_years !== undefined) {
+                    statsGrid.appendChild(createStatCard(
+                        (result.cagr_10_years * 100).toFixed(2) + '%',
+                        '10-Year CAGR',
+                        'fas fa-chart-area',
+                        '#6f42c1'
+                    ));
                 }
             }
 
-            // Add some calculated metrics if we have time series data
-            if (data.rpi_ts_historical && data.rpi_ts_historical.length > 0) {
-                const tsHistorical = data.rpi_ts_historical[0]['property/zip_rpi_ts_historical'];
-                if (tsHistorical && tsHistorical.result && tsHistorical.result.length > 0) {
-                    const tsData = tsHistorical.result;
-                    const latestRPI = tsData[tsData.length - 1]?.rpi;
-                    const oldestRPI = tsData[0]?.rpi;
+            // Add current RPI value if we have time series data
+            if (data.rpi_ts_historical && data.rpi_ts_historical.result && data.rpi_ts_historical.result.time_series) {
+                const tsData = data.rpi_ts_historical.result.time_series;
+                if (tsData.length > 0) {
+                    const latestRPI = tsData[tsData.length - 1]?.rpi_value;
+                    const oldestRPI = tsData[0]?.rpi_value;
+                    
+                    if (latestRPI) {
+                        statsGrid.appendChild(createStatCard(
+                            latestRPI.toFixed(3),
+                            'Current RPI',
+                            'fas fa-home',
+                            '#fd7e14'
+                        ));
+                    }
                     
                     if (latestRPI && oldestRPI) {
                         const growth = ((latestRPI - oldestRPI) / oldestRPI * 100);
@@ -926,7 +944,7 @@
                             growth.toFixed(2) + '%',
                             'Total Growth',
                             'fas fa-trending-up',
-                            '#fd7e14'
+                            '#20c997'
                         ));
                     }
                 }
@@ -942,31 +960,33 @@
             if (trendsChart) trendsChart.destroy();
 
             // Create RPI Historical Time Series Chart
-            if (data.rpi_ts_historical && data.rpi_ts_historical.length > 0) {
-                createRPIHistoricalChart(data.rpi_ts_historical[0]['property/zip_rpi_ts_historical']);
+            if (data.rpi_ts_historical && data.rpi_ts_historical.result) {
+                createRPIHistoricalChart(data.rpi_ts_historical);
             }
 
             // Create RPI Metrics Chart
             createRPIMetricsChart(data);
 
             // Create RPI Forecast Chart
-            if (data.rpi_ts_forecast && data.rpi_ts_forecast.length > 0) {
-                createRPIForecastChart(data.rpi_ts_forecast[0]['property/zip_rpi_ts_forecast']);
+            if (data.rpi_ts_forecast && data.rpi_ts_forecast.result) {
+                createRPIForecastChart(data.rpi_ts_forecast);
+            } else {
+                createPlaceholderForecastChart();
             }
         }
 
         function createRPIHistoricalChart(historicalData) {
-            if (!historicalData || !historicalData.result) return;
+            if (!historicalData || !historicalData.result || !historicalData.result.time_series) return;
             
             const ctx = document.getElementById('returnsChart').getContext('2d');
-            const tsData = historicalData.result;
+            const tsData = historicalData.result.time_series;
             
             const labels = tsData.map(item => {
-                const date = new Date(item.period_begin);
+                const date = new Date(item.month);
                 return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
             });
             
-            const rpiValues = tsData.map(item => item.rpi);
+            const rpiValues = tsData.map(item => item.rpi_value);
             
             const chartData = {
                 labels: labels,
@@ -1036,28 +1056,31 @@
             const colors = [];
 
             // Extract metrics from different RPI endpoints
-            if (data.rpi_forecast && data.rpi_forecast.length > 0) {
-                const forecast = data.rpi_forecast[0]['property/zip_rpi_forecast'];
-                if (forecast && forecast.result && forecast.result.rpi) {
-                    labels.push('Current RPI');
-                    values.push(forecast.result.rpi);
+            if (data.rpi_forecast && data.rpi_forecast.result) {
+                const forecast = data.rpi_forecast.result;
+                if (forecast.returns_12mo_f !== undefined) {
+                    labels.push('12M Return Forecast');
+                    values.push(Math.abs(forecast.returns_12mo_f * 100));
                     colors.push('#32d74b');
+                }
+                if (forecast.risk_12mo_loss !== undefined) {
+                    labels.push('Risk of Loss');
+                    values.push(forecast.risk_12mo_loss * 100);
+                    colors.push('#ffc107');
                 }
             }
 
-            if (data.rpi_historical && data.rpi_historical.length > 0) {
-                const historical = data.rpi_historical[0]['property/zip_rpi_historical'];
-                if (historical && historical.result) {
-                    if (historical.result.rpi_historical_mean) {
-                        labels.push('Historical Mean');
-                        values.push(historical.result.rpi_historical_mean);
-                        colors.push('#1e3a5f');
-                    }
-                    if (historical.result.rpi_historical_stdev) {
-                        labels.push('Historical StdDev');
-                        values.push(historical.result.rpi_historical_stdev);
-                        colors.push('#2c5282');
-                    }
+            if (data.rpi_historical && data.rpi_historical.result) {
+                const historical = data.rpi_historical.result;
+                if (historical.returns_1_year !== undefined) {
+                    labels.push('1Y Historical Return');
+                    values.push(historical.returns_1_year * 100);
+                    colors.push('#1e3a5f');
+                }
+                if (historical.cagr_5_years !== undefined) {
+                    labels.push('5Y CAGR');
+                    values.push(historical.cagr_5_years * 100);
+                    colors.push('#2c5282');
                 }
             }
 
@@ -1094,7 +1117,7 @@
                         },
                         tooltip: {
                             callbacks: {
-                                label: context => `${context.label}: ${context.parsed.toFixed(3)}`
+                                label: context => `${context.label}: ${context.parsed.toFixed(2)}%`
                             }
                         }
                     }
@@ -1103,21 +1126,21 @@
         }
 
         function createRPIForecastChart(forecastData) {
-            if (!forecastData || !forecastData.result) {
+            if (!forecastData || !forecastData.result || !forecastData.result.time_series) {
                 // Create placeholder chart
                 createPlaceholderForecastChart();
                 return;
             }
             
             const ctx = document.getElementById('trendsChart').getContext('2d');
-            const tsData = forecastData.result;
+            const tsData = forecastData.result.time_series;
             
             const labels = tsData.map(item => {
-                const date = new Date(item.period_begin);
+                const date = new Date(item.month);
                 return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
             });
             
-            const rpiValues = tsData.map(item => item.rpi);
+            const rpiValues = tsData.map(item => item.rpi_value);
             
             const trendData = {
                 labels: labels,
