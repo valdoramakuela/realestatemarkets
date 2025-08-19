@@ -360,6 +360,11 @@
             border-color: #32d74b;
             color: #32d74b;
         }
+        .chart-btn.active {
+            background-color: #32d74b !important;
+            color: white !important;
+            border-color: #32d74b !important;
+        }
         /* Map Container */
         .map-container {
             background: rgba(255, 255, 255, 0.95);
@@ -588,10 +593,10 @@
                                     <div class="chart-subtitle" id="historicalChartSubtitle">Property value appreciation over time</div>
                                 </div>
                                 <div class="chart-actions">
-                                    <button class="chart-btn">1Y</button>
-                                    <button class="chart-btn">5Y</button>
-                                    <button class="chart-btn">10Y</button>
-                                    <button class="chart-btn">All</button>
+                                    <button class="chart-btn" onclick="handleChartPeriodChange('1Y')" id="btn-1Y">1Y</button>
+                                    <button class="chart-btn" onclick="handleChartPeriodChange('5Y')" id="btn-5Y">5Y</button>
+                                    <button class="chart-btn" onclick="handleChartPeriodChange('10Y')" id="btn-10Y">10Y</button>
+                                    <button class="chart-btn" onclick="handleChartPeriodChange('All')" id="btn-All">All</button>
                                 </div>
                             </div>
                             <canvas id="returnsChart"></canvas>
@@ -648,6 +653,8 @@
         let currentZipMarker = null;
         let currentZipCircle = null;
         let currentSearchType = 'zipcode';
+        let currentSearchTerm = '';
+        let currentAddressData = null;
         const GOOGLE_MAPS_API_KEY = 'AIzaSyBHGYla18wlILgHfqWYQm1-MfwkarMUbvA';
 
         // Global functions
@@ -680,6 +687,27 @@
             searchInput.value = '';
             hideDashboard();
             hideError();
+        }
+
+        function handleChartPeriodChange(period) {
+            // Update button states
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.backgroundColor = '';
+                btn.style.color = '';
+            });
+            
+            const activeBtn = document.getElementById(`btn-${period}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.style.backgroundColor = '#32d74b';
+                activeBtn.style.color = 'white';
+            }
+            
+            // Re-fetch data with new period if we're in address mode
+            if (currentSearchType === 'address' && currentSearchTerm) {
+                fetchMarketDataByAddress(currentSearchTerm, period);
+            }
         }
 
         function selectSection(section) {
@@ -740,12 +768,20 @@
             }
         }
 
-        async function fetchMarketDataByAddress(address) {
+        async function fetchMarketDataByAddress(address, period = null) {
             showLoading(true);
             hideError();
             hideDashboard();
+            
+            currentSearchTerm = address;
+            
             try {
-                const response = await fetch(`/api/market-data-by-address?address=${encodeURIComponent(address)}`);
+                let url = `/api/market-data-by-address?address=${encodeURIComponent(address)}`;
+                if (period) {
+                    url += `&period=${period}`;
+                }
+                
+                const response = await fetch(url);
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || 'Failed to fetch data');
                 
@@ -755,6 +791,7 @@
                     return;
                 }
                 
+                currentAddressData = data;
                 displayAddressDashboard(data, address);
             } catch (error) {
                 showError(error.message || 'Failed to fetch market data');
