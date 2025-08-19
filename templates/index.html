@@ -584,8 +584,8 @@
                         <div class="chart-container large">
                             <div class="chart-header">
                                 <div>
-                                    <div class="chart-title">Historical Returns</div>
-                                    <div class="chart-subtitle">Property value appreciation over time</div>
+                                    <div class="chart-title" id="historicalChartTitle">Historical Returns</div>
+                                    <div class="chart-subtitle" id="historicalChartSubtitle">Property value appreciation over time</div>
                                 </div>
                                 <div class="chart-actions">
                                     <button class="chart-btn">1Y</button>
@@ -613,8 +613,8 @@
                         <div class="chart-container medium">
                             <div class="chart-header">
                                 <div>
-                                    <div class="chart-title">Market Metrics</div>
-                                    <div class="chart-subtitle">Key performance indicators</div>
+                                    <div class="chart-title" id="metricsChartTitle">Market Metrics</div>
+                                    <div class="chart-subtitle" id="metricsChartSubtitle">Key performance indicators</div>
                                 </div>
                             </div>
                             <canvas id="metricsChart"></canvas>
@@ -623,8 +623,8 @@
                         <div class="chart-container medium">
                             <div class="chart-header">
                                 <div>
-                                    <div class="chart-title">Price Trends</div>
-                                    <div class="chart-subtitle">Monthly price movement</div>
+                                    <div class="chart-title" id="trendsChartTitle">Price Trends</div>
+                                    <div class="chart-subtitle" id="trendsChartSubtitle">Monthly price movement</div>
                                 </div>
                             </div>
                             <canvas id="trendsChart"></canvas>
@@ -673,7 +673,7 @@
                 searchInput.placeholder = 'Enter ZIP code (e.g., 22207)';
                 searchBtnText.textContent = 'SEARCH BY ZIP CODE';
             } else {
-                searchInput.placeholder = 'Enter full address (e.g., 123 Main St, Arlington, VA)';
+                searchInput.placeholder = 'Enter full address (e.g., 2313 N Wakefield St Arlington VA 22207)';
                 searchBtnText.textContent = 'SEARCH BY ADDRESS';
             }
 
@@ -732,7 +732,7 @@
                     showNoData();
                     return;
                 }
-                displayDashboard(data, zipcode);
+                displayZipcodeDashboard(data, zipcode);
             } catch (error) {
                 showError(error.message || 'Failed to fetch market data');
             } finally {
@@ -744,13 +744,37 @@
             showLoading(true);
             hideError();
             hideDashboard();
-            showError('Address search will be implemented soon. Please use ZIP code search for now.');
-            showLoading(false);
+            try {
+                const response = await fetch(`/api/market-data-by-address?address=${encodeURIComponent(address)}`);
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to fetch data');
+                
+                // Check if we have any valid data
+                if (!data.rpi_forecast && !data.rpi_historical && !data.rpi_ts_forecast && !data.rpi_ts_historical) {
+                    showNoData();
+                    return;
+                }
+                
+                displayAddressDashboard(data, address);
+            } catch (error) {
+                showError(error.message || 'Failed to fetch market data');
+            } finally {
+                showLoading(false);
+            }
         }
 
-        function displayDashboard(data, searchTerm) {
+        function displayZipcodeDashboard(data, searchTerm) {
             const dashboard = document.getElementById('dashboard');
             const statsGrid = document.getElementById('statsGrid');
+            
+            // Update chart titles for zipcode search
+            document.getElementById('historicalChartTitle').textContent = 'Historical Returns';
+            document.getElementById('historicalChartSubtitle').textContent = 'Property value appreciation over time';
+            document.getElementById('metricsChartTitle').textContent = 'Market Metrics';
+            document.getElementById('metricsChartSubtitle').textContent = 'Key performance indicators';
+            document.getElementById('trendsChartTitle').textContent = 'Price Trends';
+            document.getElementById('trendsChartSubtitle').textContent = 'Monthly price movement';
+            
             loadGoogleMapsAndInitialize(searchTerm);
             statsGrid.innerHTML = '';
 
@@ -823,6 +847,370 @@
 
             createCharts(data);
             dashboard.style.display = 'block';
+        }
+
+        function displayAddressDashboard(data, searchTerm) {
+            const dashboard = document.getElementById('dashboard');
+            const statsGrid = document.getElementById('statsGrid');
+            
+            // Update chart titles for address search
+            document.getElementById('historicalChartTitle').textContent = 'RPI Historical Trend';
+            document.getElementById('historicalChartSubtitle').textContent = 'Rental Price Index over time';
+            document.getElementById('metricsChartTitle').textContent = 'RPI Metrics';
+            document.getElementById('metricsChartSubtitle').textContent = 'Rental market indicators';
+            document.getElementById('trendsChartTitle').textContent = 'RPI Forecast';
+            document.getElementById('trendsChartSubtitle').textContent = 'Predicted rental price trends';
+            
+            loadGoogleMapsAndInitialize(searchTerm);
+            statsGrid.innerHTML = '';
+
+            // Display RPI Forecast data
+            if (data.rpi_forecast && data.rpi_forecast.length > 0) {
+                const forecast = data.rpi_forecast[0]['property/zip_rpi_forecast'];
+                if (forecast && forecast.result) {
+                    const result = forecast.result;
+                    if (result.rpi) {
+                        statsGrid.appendChild(createStatCard(
+                            result.rpi.toFixed(3),
+                            'Current RPI',
+                            'fas fa-chart-line',
+                            '#32d74b'
+                        ));
+                    }
+                    if (result.rpi_forecast_stdev) {
+                        statsGrid.appendChild(createStatCard(
+                            result.rpi_forecast_stdev.toFixed(3),
+                            'Forecast StdDev',
+                            'fas fa-chart-bar',
+                            '#1e3a5f'
+                        ));
+                    }
+                }
+            }
+
+            // Display RPI Historical data
+            if (data.rpi_historical && data.rpi_historical.length > 0) {
+                const historical = data.rpi_historical[0]['property/zip_rpi_historical'];
+                if (historical && historical.result) {
+                    const result = historical.result;
+                    if (result.rpi_historical_mean) {
+                        statsGrid.appendChild(createStatCard(
+                            result.rpi_historical_mean.toFixed(3),
+                            'Historical Mean RPI',
+                            'fas fa-history',
+                            '#2c5282'
+                        ));
+                    }
+                    if (result.rpi_historical_stdev) {
+                        statsGrid.appendChild(createStatCard(
+                            result.rpi_historical_stdev.toFixed(3),
+                            'Historical StdDev',
+                            'fas fa-chart-area',
+                            '#28a745'
+                        ));
+                    }
+                }
+            }
+
+            // Add some calculated metrics if we have time series data
+            if (data.rpi_ts_historical && data.rpi_ts_historical.length > 0) {
+                const tsHistorical = data.rpi_ts_historical[0]['property/zip_rpi_ts_historical'];
+                if (tsHistorical && tsHistorical.result && tsHistorical.result.length > 0) {
+                    const tsData = tsHistorical.result;
+                    const latestRPI = tsData[tsData.length - 1]?.rpi;
+                    const oldestRPI = tsData[0]?.rpi;
+                    
+                    if (latestRPI && oldestRPI) {
+                        const growth = ((latestRPI - oldestRPI) / oldestRPI * 100);
+                        statsGrid.appendChild(createStatCard(
+                            growth.toFixed(2) + '%',
+                            'Total Growth',
+                            'fas fa-trending-up',
+                            '#fd7e14'
+                        ));
+                    }
+                }
+            }
+
+            createAddressCharts(data);
+            dashboard.style.display = 'block';
+        }
+
+        function createAddressCharts(data) {
+            if (returnsChart) returnsChart.destroy();
+            if (metricsChart) metricsChart.destroy();
+            if (trendsChart) trendsChart.destroy();
+
+            // Create RPI Historical Time Series Chart
+            if (data.rpi_ts_historical && data.rpi_ts_historical.length > 0) {
+                createRPIHistoricalChart(data.rpi_ts_historical[0]['property/zip_rpi_ts_historical']);
+            }
+
+            // Create RPI Metrics Chart
+            createRPIMetricsChart(data);
+
+            // Create RPI Forecast Chart
+            if (data.rpi_ts_forecast && data.rpi_ts_forecast.length > 0) {
+                createRPIForecastChart(data.rpi_ts_forecast[0]['property/zip_rpi_ts_forecast']);
+            }
+        }
+
+        function createRPIHistoricalChart(historicalData) {
+            if (!historicalData || !historicalData.result) return;
+            
+            const ctx = document.getElementById('returnsChart').getContext('2d');
+            const tsData = historicalData.result;
+            
+            const labels = tsData.map(item => {
+                const date = new Date(item.period_begin);
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+            });
+            
+            const rpiValues = tsData.map(item => item.rpi);
+            
+            const chartData = {
+                labels: labels,
+                datasets: [{
+                    label: 'RPI Value',
+                    data: rpiValues,
+                    borderColor: '#32d74b',
+                    backgroundColor: 'rgba(50, 215, 75, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#32d74b',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 8
+                }]
+            };
+            
+            returnsChart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 58, 95, 0.95)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#32d74b',
+                            borderWidth: 2,
+                            cornerRadius: 8,
+                            padding: 12,
+                            callbacks: {
+                                title: context => context[0].label,
+                                label: context => `RPI: ${context.parsed.y.toFixed(3)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: value => value.toFixed(3),
+                                color: '#6c757d'
+                            },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            ticks: { 
+                                color: '#6c757d',
+                                maxTicksLimit: 10
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createRPIMetricsChart(data) {
+            const ctx = document.getElementById('metricsChart').getContext('2d');
+            const labels = [];
+            const values = [];
+            const colors = [];
+
+            // Extract metrics from different RPI endpoints
+            if (data.rpi_forecast && data.rpi_forecast.length > 0) {
+                const forecast = data.rpi_forecast[0]['property/zip_rpi_forecast'];
+                if (forecast && forecast.result && forecast.result.rpi) {
+                    labels.push('Current RPI');
+                    values.push(forecast.result.rpi);
+                    colors.push('#32d74b');
+                }
+            }
+
+            if (data.rpi_historical && data.rpi_historical.length > 0) {
+                const historical = data.rpi_historical[0]['property/zip_rpi_historical'];
+                if (historical && historical.result) {
+                    if (historical.result.rpi_historical_mean) {
+                        labels.push('Historical Mean');
+                        values.push(historical.result.rpi_historical_mean);
+                        colors.push('#1e3a5f');
+                    }
+                    if (historical.result.rpi_historical_stdev) {
+                        labels.push('Historical StdDev');
+                        values.push(historical.result.rpi_historical_stdev);
+                        colors.push('#2c5282');
+                    }
+                }
+            }
+
+            if (labels.length === 0) {
+                // Show placeholder if no data
+                labels.push('No Data');
+                values.push(1);
+                colors.push('#6c757d');
+            }
+
+            metricsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: { 
+                    labels, 
+                    datasets: [{ 
+                        data: values, 
+                        backgroundColor: colors, 
+                        borderColor: '#fff', 
+                        borderWidth: 3 
+                    }] 
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                color: '#6c757d',
+                                font: { size: 12, weight: 500 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: context => `${context.label}: ${context.parsed.toFixed(3)}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createRPIForecastChart(forecastData) {
+            if (!forecastData || !forecastData.result) {
+                // Create placeholder chart
+                createPlaceholderForecastChart();
+                return;
+            }
+            
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            const tsData = forecastData.result;
+            
+            const labels = tsData.map(item => {
+                const date = new Date(item.period_begin);
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+            });
+            
+            const rpiValues = tsData.map(item => item.rpi);
+            
+            const trendData = {
+                labels: labels,
+                datasets: [{
+                    label: 'RPI Forecast',
+                    data: rpiValues,
+                    borderColor: '#1e3a5f',
+                    backgroundColor: 'rgba(30, 58, 95, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#1e3a5f',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 8
+                }]
+            };
+
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: trendData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: context => `RPI: ${context.parsed.y.toFixed(3)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: (value) => value.toFixed(3),
+                                color: '#6c757d'
+                            },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            ticks: { 
+                                color: '#6c757d',
+                                maxTicksLimit: 8
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPlaceholderForecastChart() {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            const trendData = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'No Forecast Data',
+                    data: [1.0, 1.01, 1.02, 1.03, 1.04, 1.05],
+                    borderColor: '#6c757d',
+                    backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    borderDash: [5, 5]
+                }]
+            };
+
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: trendData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: (value) => value.toFixed(2),
+                                color: '#6c757d'
+                            },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#6c757d' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
         }
 
         function createStatCard(value, label, icon, color, extraClass = '') {
