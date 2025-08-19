@@ -163,12 +163,13 @@ def fetch_address_market_data(address, start_date=None, end_date=None):
                 if response and isinstance(response, list) and len(response) > 0:
                     # Response is an array, get the first item
                     data_item = response[0]
-                    endpoint_key = f"property{endpoints[key].replace('property', '')}"
+                    # Use the correct single slash format for property endpoints
+                    endpoint_key = endpoints[key].replace('/property/', 'property/')
                     
                     if endpoint_key in data_item:
                         api_response = data_item[endpoint_key]
                         if api_response.get('api_code') == 0:
-                            market_data[key] = api_response.get('result')
+                            market_data[key] = api_response
                             print(f"Successfully extracted {key} data")
                         else:
                             print(f"API error for {key}: {api_response.get('api_code_description')}")
